@@ -3,7 +3,7 @@ const router = express.Router();
 const employeeController = require('../controllers/employeeController');
 const { authenticate, authorize, authorizeSelfOrRoles } = require('../middleware/auth');
 const { HR_MANAGERS, ADMIN_ONLY } = require('../config/roles');
-const { createEmployeeValidator } = require('../validators/employeeValidator');
+const { createEmployeeValidator, updateEmployeeValidator } = require('../validators/employeeValidator');
 const validate = require('../middleware/validate');
 
 // All employee routes require authentication
@@ -32,6 +32,8 @@ router.post(
 router.put(
   '/:id',
   authorize(...HR_MANAGERS),
+  updateEmployeeValidator,
+  validate,
   employeeController.updateEmployee
 );
 
