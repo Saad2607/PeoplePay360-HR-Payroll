@@ -9,7 +9,7 @@ export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[750px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Name & Code</th>
