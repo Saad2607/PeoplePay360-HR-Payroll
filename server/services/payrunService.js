@@ -2,6 +2,8 @@ const Payrun = require('../models/Payrun');
 const Employee = require('../models/Employee');
 const Contract = require('../models/Contract');
 const SalaryStructure = require('../models/SalaryStructure');
+const Payslip = require('../models/Payslip');
+const payrollService = require('./payrollService');
 
 /**
  * Step 2 of Payrun Wizard: Filter eligible employees for a given salary structure and period.
@@ -226,10 +228,168 @@ const deletePayrun = async (id) => {
   return { message: 'Payrun deleted successfully' };
 };
 
+/**
+ * Compute Payrun: Generate and store payslips for all selected employees using payrollService.calculatePayslip.
+ * Does NOT duplicate calculation logic.
+ */
+const computePayrun = async (payrunId, user) => {
+  const payrun = await Payrun.findById(payrunId).populate('salaryStructure');
+  if (!payrun) {
+    const error = new Error('Payrun not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (['Validated', 'Paid'].includes(payrun.status)) {
+    const error = new Error(`Cannot re-compute a payrun that is already in '${payrun.status}' status.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const payslipIds = [];
+  let totalGross = 0;
+  let totalDeductions = 0;
+  let totalNet = 0;
+
+  for (const empId of payrun.selectedEmployees) {
+    // Call existing calculatePayslip service
+    const calcResult = await payrollService.calculatePayslip({
+      employee: empId,
+      period: payrun.period,
+      salaryStructure: payrun.salaryStructure
+    });
+
+    const startYear = payrun.period.startDate.getFullYear();
+    const startMonth = String(payrun.period.startDate.getMonth() + 1).padStart(2, '0');
+    const payslipNumber = `PAY-${startYear}${startMonth}-${calcResult.employee.employeeId || empId.toString().slice(-6).toUpperCase()}`;
+
+    // Extract basic, allowances, deductions
+    const basicAmount = calcResult.earnings.find((e) => e.code === 'BASIC')?.amount || 0;
+    const allowancesAmount = calcResult.earnings
+      .filter((e) => e.code !== 'BASIC')
+      .reduce((sum, e) => sum + e.amount, 0);
+    const deductionsAmount = calcResult.totalDeductions;
+
+    // Upsert or create Payslip
+    let payslip = await Payslip.findOne({ payrun: payrun._id, employee: empId });
+    if (!payslip) {
+      payslip = new Payslip({
+        payslipNumber,
+        employee: empId,
+        payrun: payrun._id
+      });
+    }
+
+    payslip.salaryStructure = payrun.salaryStructure._id;
+    payslip.contract = calcResult.contract._id;
+    payslip.period = payrun.period;
+    payslip.workedDays = calcResult.attendanceSummary?.presentDays || 0;
+    payslip.basic = basicAmount;
+    payslip.allowances = allowancesAmount;
+    payslip.deductions = deductionsAmount;
+    payslip.gross = calcResult.grossSalary;
+    payslip.net = calcResult.netSalary;
+    payslip.status = 'Computed';
+    payslip.salaryBreakdown = calcResult.ruleBreakdown;
+    payslip.attendanceSummary = calcResult.attendanceSummary;
+    payslip.timeOffSummary = calcResult.timeOffSummary;
+
+    await payslip.save();
+    payslipIds.push(payslip._id);
+
+    totalGross += payslip.gross;
+    totalDeductions += payslip.deductions;
+    totalNet += payslip.net;
+  }
+
+  payrun.payslips = payslipIds;
+  payrun.totalGross = Math.round(totalGross * 100) / 100;
+  payrun.totalDeductions = Math.round(totalDeductions * 100) / 100;
+  payrun.totalNet = Math.round(totalNet * 100) / 100;
+  payrun.status = 'Computed';
+
+  await payrun.save();
+
+  return Payrun.findById(payrun._id)
+    .populate('salaryStructure', 'name')
+    .populate('selectedEmployees', 'name email employeeId department jobPosition')
+    .populate('payslips');
+};
+
+/**
+ * Get all payslips with filtering & role permission checks
+ */
+const getPayslips = async (queryParams, user) => {
+  const { employee, payrun, status, page = 1, limit = 10 } = queryParams;
+  const filter = {};
+
+  if (user.role === 'Employee') {
+    const empId = user.employee?._id || user.employee;
+    filter.employee = empId;
+  } else if (employee) {
+    filter.employee = employee;
+  }
+
+  if (payrun) filter.payrun = payrun;
+  if (status) filter.status = status;
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const total = await Payslip.countDocuments(filter);
+
+  const payslips = await Payslip.find(filter)
+    .populate('employee', 'name email employeeId department jobPosition')
+    .populate('payrun', 'name period status')
+    .populate('salaryStructure', 'name')
+    .populate('contract', 'contractNumber wage')
+    .sort({ 'period.startDate': -1, createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
+
+  return { payslips, total, page: Number(page), limit: Number(limit) };
+};
+
+/**
+ * Get single payslip by ID
+ */
+const getPayslipById = async (id, user) => {
+  const payslip = await Payslip.findById(id)
+    .populate({
+      path: 'employee',
+      populate: [
+        { path: 'department', select: 'name code' },
+        { path: 'jobPosition', select: 'name' }
+      ]
+    })
+    .populate('payrun', 'name period status payment')
+    .populate('salaryStructure', 'name')
+    .populate('contract');
+
+  if (!payslip) {
+    const error = new Error('Payslip not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Employee self-authorization check
+  if (user.role === 'Employee') {
+    const userEmpId = (user.employee?._id || user.employee).toString();
+    if (payslip.employee._id.toString() !== userEmpId) {
+      const error = new Error('Forbidden: You can only view your own payslip.');
+      error.statusCode = 403;
+      throw error;
+    }
+  }
+
+  return payslip;
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
   getPayruns,
   getPayrunById,
-  deletePayrun
+  deletePayrun,
+  computePayrun,
+  getPayslips,
+  getPayslipById
 };

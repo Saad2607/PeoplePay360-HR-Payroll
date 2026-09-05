@@ -62,7 +62,12 @@ const authorize = (...allowedRoles) => {
       return next();
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    // Expand HR alias to include all HR managerial and payroll roles
+    const expandedAllowed = allowedRoles.flatMap((role) =>
+      role === 'HR' ? [ROLES.HR_MANAGER, ROLES.HR_PAYROLL_USER, ROLES.HR_PAYROLL_MANAGER] : [role]
+    );
+
+    if (!expandedAllowed.includes(req.user.role)) {
       return errorResponse(
         res,
         `Forbidden: Role '${req.user.role}' is not authorized to access this resource. Required role(s): ${allowedRoles.join(', ')}`,

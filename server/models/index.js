@@ -11,6 +11,7 @@ const TimeOffRequest = require('./TimeOffRequest');
 const SalaryStructure = require('./SalaryStructure');
 const SalaryRule = require('./SalaryRule');
 const Payrun = require('./Payrun');
+const Payslip = require('./Payslip');
 
 module.exports = {
   User,
@@ -26,5 +27,6 @@ module.exports = {
   TimeOffRequest,
   SalaryStructure,
   SalaryRule,
-  Payrun
+  Payrun,
+  Payslip
 };

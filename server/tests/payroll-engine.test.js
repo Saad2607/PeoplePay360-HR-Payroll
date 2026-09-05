@@ -69,7 +69,7 @@ async function setup() {
     name: 'HR Lead',
     email: 'hr.lead@peoplepay360.com',
     password: 'Password123!',
-    role: 'HR'
+    role: 'HR Manager'
   });
 
   employeeUser = await User.create({

@@ -43,6 +43,12 @@ router.get(
   payrunController.getPayrunById
 );
 
+router.post(
+  '/:id/compute',
+  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  payrunController.computePayrun
+);
+
 router.delete(
   '/:id',
   authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),

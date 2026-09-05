@@ -117,7 +117,7 @@ async function setup() {
     name: 'HR Specialist',
     email: 'hr.specialist@peoplepay360.com',
     password: 'Password123!',
-    role: 'HR',
+    role: 'HR Manager',
     employee: null,
     isActive: true
   });

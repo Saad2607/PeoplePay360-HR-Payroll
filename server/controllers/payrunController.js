@@ -81,10 +81,25 @@ const deletePayrun = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   POST /api/payruns/:id/compute
+ * @desc    Compute payrun: generate and store payslips for all selected employees
+ * @access  Private (Admin, HR)
+ */
+const computePayrun = async (req, res, next) => {
+  try {
+    const payrun = await payrunService.computePayrun(req.params.id, req.user);
+    return successResponse(res, payrun, 'Payrun computed and payslips generated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
   getPayruns,
   getPayrunById,
-  deletePayrun
+  deletePayrun,
+  computePayrun
 };
