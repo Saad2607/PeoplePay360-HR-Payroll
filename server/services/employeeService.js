@@ -1,11 +1,15 @@
 const Employee = require('../models/Employee');
+const { ROLES } = require('../config/roles');
+const mongoose = require('mongoose');
 
 /**
- * Fetch all employees with optional filters and pagination
+ * Fetch employees with optional filters, search, and pagination.
+ * If requesting user is Employee role, restricts results to their own record.
  */
-const getEmployees = async (queryParams = {}) => {
+const getEmployees = async (queryParams = {}, requestingUser = null) => {
   const {
     department,
+    jobPosition,
     status,
     employeeType,
     search,
@@ -17,15 +21,26 @@ const getEmployees = async (queryParams = {}) => {
 
   const filter = {};
 
-  if (department) filter.department = department;
-  if (status) filter.status = status;
-  if (employeeType) filter.employeeType = employeeType;
-  if (search) {
-    filter.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-      { employeeId: { $regex: search, $options: 'i' } }
-    ];
+  // Role-based boundary: Standard employees can only query their own record
+  if (requestingUser && requestingUser.role === ROLES.EMPLOYEE) {
+    const userEmpId = requestingUser.employee?._id || requestingUser.employee;
+    if (!userEmpId) {
+      return { employees: [], total: 0, page: Number(page), limit: Number(limit) };
+    }
+    filter._id = userEmpId;
+  } else {
+    // Privileged roles can filter across all fields
+    if (department) filter.department = department;
+    if (jobPosition) filter.jobPosition = jobPosition;
+    if (status) filter.status = status;
+    if (employeeType) filter.employeeType = employeeType;
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { employeeId: { $regex: search, $options: 'i' } }
+      ];
+    }
   }
 
   const skip = (Number(page) - 1) * Number(limit);
@@ -48,10 +63,10 @@ const getEmployees = async (queryParams = {}) => {
 };
 
 /**
- * Fetch employee by ID with populated relations and virtuals
+ * Fetch employee by ID with fully populated relational links & virtuals
  */
 const getEmployeeById = async (id) => {
-  const employee = await Employee.findById(id)
+  let query = Employee.findById(id)
     .populate('department')
     .populate('jobPosition')
     .populate('manager', 'name email employeeId')
@@ -59,6 +74,19 @@ const getEmployeeById = async (id) => {
     .populate('activeContract')
     .populate('contracts')
     .populate('directReports', 'name email employeeId jobPosition');
+
+  // Conditionally populate Krish's future models if they have been registered in mongoose
+  if (mongoose.models.Attendance) {
+    query = query.populate('attendances');
+  }
+  if (mongoose.models.TimeOff) {
+    query = query.populate('timeOffRequests');
+  }
+  if (mongoose.models.LeaveAllocation) {
+    query = query.populate('allocations');
+  }
+
+  const employee = await query.exec();
 
   if (!employee) {
     const error = new Error(`Employee not found with id: ${id}`);
@@ -100,7 +128,7 @@ const updateEmployee = async (id, updateData) => {
 };
 
 /**
- * Soft delete or remove an employee
+ * Terminate/remove an employee (Admin only)
  */
 const deleteEmployee = async (id) => {
   const employee = await Employee.findById(id);
@@ -110,7 +138,7 @@ const deleteEmployee = async (id) => {
     throw error;
   }
 
-  // Set status to Terminated
+  // Soft delete: update status to Terminated
   employee.status = 'Terminated';
   await employee.save();
   return employee;
