@@ -40,9 +40,10 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
       setLoadingStructures(true);
       try {
         const res = await salaryStructureApi.getAll();
-        setStructures(res.data || []);
-        if (res.data?.length > 0) {
-          setSalaryStructureId(res.data[0]._id);
+        const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        setStructures(list);
+        if (list.length > 0 && list[0]._id) {
+          setSalaryStructureId(list[0]._id);
         }
       } catch (err) {
         setError('Failed to load salary structures');
@@ -197,16 +198,21 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
             </label>
             {loadingStructures ? (
               <div className="text-xs text-gray-500 py-2">Loading salary structures...</div>
+            ) : structures.length === 0 ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
+                No active salary structures found. Please create a salary structure in Payroll Management first.
+              </div>
             ) : (
               <select
                 required
                 value={salaryStructureId}
                 onChange={(e) => setSalaryStructureId(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium"
               >
+                <option value="">-- Select Salary Structure --</option>
                 {structures.map((s) => (
                   <option key={s._id} value={s._id}>
-                    {s.name} ({s.code})
+                    {s.name} {s.description ? `- ${s.description}` : ''}
                   </option>
                 ))}
               </select>
