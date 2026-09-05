@@ -4,6 +4,7 @@ const Contract = require('../models/Contract');
 const SalaryStructure = require('../models/SalaryStructure');
 const Payslip = require('../models/Payslip');
 const payrollService = require('./payrollService');
+const payrollValidatorService = require('./payrollValidatorService');
 
 /**
  * Step 2 of Payrun Wizard: Filter eligible employees for a given salary structure and period.
@@ -383,6 +384,119 @@ const getPayslipById = async (id, user) => {
   return payslip;
 };
 
+/**
+ * Validate Payrun: Runs the full payroll validation engine.
+ * If valid, updates payrun and its payslips to 'Validated' status.
+ * If invalid, saves error breakdown on payrun and throws an informative 422 error.
+ */
+const validatePayrun = async (payrunId, user) => {
+  const payrun = await Payrun.findById(payrunId);
+  if (!payrun) {
+    const error = new Error('Payrun not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (payrun.status === 'Draft') {
+    const error = new Error('Payrun must be computed before it can be validated. Please compute the payrun first.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (payrun.status === 'Paid') {
+    const error = new Error('Payrun has already been paid and cannot be re-validated.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Execute Payroll Validation Engine
+  const validationResult = await payrollValidatorService.validatePayrun(payrunId);
+
+  payrun.validation = {
+    isValid: validationResult.isValid,
+    validatedAt: validationResult.isValid ? new Date() : null,
+    validatedBy: validationResult.isValid ? (user?._id || null) : null,
+    errors: validationResult.errors,
+    warnings: validationResult.warnings
+  };
+
+  if (!validationResult.isValid) {
+    await payrun.save();
+    const error = new Error(`Payroll validation failed with ${validationResult.errors.length} error(s). Ensure all issues are resolved before validating.`);
+    error.statusCode = 422;
+    error.errors = validationResult.errors;
+    error.warnings = validationResult.warnings;
+    throw error;
+  }
+
+  // Validation passed: update status to Validated
+  payrun.status = 'Validated';
+  await payrun.save();
+
+  // Update all linked payslips to Validated
+  await Payslip.updateMany(
+    { payrun: payrun._id },
+    { $set: { status: 'Validated' } }
+  );
+
+  return Payrun.findById(payrun._id)
+    .populate('salaryStructure', 'name')
+    .populate('selectedEmployees', 'name email employeeId department jobPosition')
+    .populate('payslips')
+    .populate('validation.validatedBy', 'name email');
+};
+
+/**
+ * Read-only inspection of payrun validation status
+ */
+const checkPayrunValidation = async (payrunId) => {
+  return payrollValidatorService.validatePayrun(payrunId);
+};
+
+/**
+ * Mark Payrun as Paid: requires payrun to be in 'Validated' status.
+ * Updates payrun and all linked payslips to 'Paid'.
+ */
+const markPaid = async (payrunId, paymentData = {}, user) => {
+  const payrun = await Payrun.findById(payrunId);
+  if (!payrun) {
+    const error = new Error('Payrun not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (payrun.status !== 'Validated') {
+    const error = new Error(`Cannot mark payrun as Paid. Current status is '${payrun.status}'. Payrun must be in 'Validated' status first.`);
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const { paymentMethod = 'Bank Transfer', reference = '' } = paymentData;
+
+  payrun.status = 'Paid';
+  payrun.payment = {
+    paidAt: new Date(),
+    paidBy: user?._id || null,
+    paymentMethod,
+    reference
+  };
+
+  await payrun.save();
+
+  // Update all linked payslips to Paid
+  await Payslip.updateMany(
+    { payrun: payrun._id },
+    { $set: { status: 'Paid' } }
+  );
+
+  return Payrun.findById(payrun._id)
+    .populate('salaryStructure', 'name')
+    .populate('selectedEmployees', 'name email employeeId department jobPosition')
+    .populate('payslips')
+    .populate('validation.validatedBy', 'name email')
+    .populate('payment.paidBy', 'name email');
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
@@ -390,6 +504,9 @@ module.exports = {
   getPayrunById,
   deletePayrun,
   computePayrun,
+  validatePayrun,
+  checkPayrunValidation,
+  markPaid,
   getPayslips,
   getPayslipById
 };

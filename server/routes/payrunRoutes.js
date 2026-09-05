@@ -5,7 +5,8 @@ const { authenticate, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const {
   wizardEligibleEmployeesValidator,
-  createPayrunValidator
+  createPayrunValidator,
+  markPaidValidator
 } = require('../validators/payrollValidator');
 const { HR_MANAGERS, PAYROLL_USERS } = require('../config/roles');
 
@@ -47,6 +48,26 @@ router.post(
   '/:id/compute',
   authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
   payrunController.computePayrun
+);
+
+router.post(
+  '/:id/validate',
+  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  payrunController.validatePayrun
+);
+
+router.get(
+  '/:id/validate',
+  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  payrunController.checkValidation
+);
+
+router.post(
+  '/:id/mark-paid',
+  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  markPaidValidator,
+  validate,
+  payrunController.markPaid
 );
 
 router.delete(

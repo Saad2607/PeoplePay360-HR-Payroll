@@ -95,11 +95,62 @@ const computePayrun = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   POST /api/payruns/:id/validate
+ * @desc    Validate payrun using the payroll validation engine
+ * @access  Private (Admin, HR)
+ */
+const validatePayrun = async (req, res, next) => {
+  try {
+    const payrun = await payrunService.validatePayrun(req.params.id, req.user);
+    return successResponse(res, payrun, 'Payrun successfully validated and approved');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   GET /api/payruns/:id/validate
+ * @desc    Run payroll validation check without updating state (read-only audit)
+ * @access  Private (Admin, HR)
+ */
+const checkValidation = async (req, res, next) => {
+  try {
+    const result = await payrunService.checkPayrunValidation(req.params.id);
+    return successResponse(res, result, 'Payroll validation inspection completed');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   POST /api/payruns/:id/mark-paid
+ * @desc    Mark a validated payrun and all its payslips as Paid
+ * @access  Private (Admin, HR)
+ */
+const markPaid = async (req, res, next) => {
+  try {
+    const { paymentMethod, reference } = req.body;
+    const payrun = await payrunService.markPaid(
+      req.params.id,
+      { paymentMethod, reference },
+      req.user
+    );
+    return successResponse(res, payrun, 'Payrun and payslips marked as Paid successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
   getPayruns,
   getPayrunById,
   deletePayrun,
-  computePayrun
+  computePayrun,
+  validatePayrun,
+  checkValidation,
+  markPaid
 };
+

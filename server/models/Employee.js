@@ -76,6 +76,14 @@ const employeeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
+    },
+    bankDetails: {
+      accountName: { type: String, trim: true, default: '' },
+      accountNumber: { type: String, trim: true, default: '' },
+      bankName: { type: String, trim: true, default: '' },
+      routingNumber: { type: String, trim: true, default: '' },
+      iban: { type: String, trim: true, default: '' },
+      swiftCode: { type: String, trim: true, default: '' }
     }
   },
   {
