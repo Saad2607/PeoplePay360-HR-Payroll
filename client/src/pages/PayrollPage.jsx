@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { payrunApi } from '../api/payrunApi';
 import { payslipApi } from '../api/payslipApi';
 import { salaryStructureApi } from '../api/salaryStructureApi';
+import { salaryRuleApi } from '../api/salaryRuleApi';
 import { PayrunList } from '../components/payroll/PayrunList';
 import { PayrunWizardModal } from '../components/payroll/PayrunWizardModal';
 import { PayrunDetails } from '../components/payroll/PayrunDetails';
@@ -10,6 +11,8 @@ import { PayslipList } from '../components/payroll/PayslipList';
 import { PayslipDetailsModal } from '../components/payroll/PayslipDetailsModal';
 import { SalaryStructureList } from '../components/payroll/SalaryStructureList';
 import { SalaryStructureFormModal } from '../components/payroll/SalaryStructureFormModal';
+import { SalaryRuleList } from '../components/payroll/SalaryRuleList';
+import { SalaryRuleFormModal } from '../components/payroll/SalaryRuleFormModal';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
@@ -23,6 +26,7 @@ import {
   PlayCircle,
   FileText,
   Layers,
+  Sliders,
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
@@ -56,6 +60,8 @@ export const PayrollPage = () => {
   const [payruns, setPayruns] = useState([]);
   const [payslips, setPayslips] = useState([]);
   const [structures, setStructures] = useState([]);
+  const [rules, setRules] = useState([]);
+  const [structureSubTab, setStructureSubTab] = useState('structures'); // 'structures' | 'rules'
 
   // Pagination & Filters
   const [page, setPage] = useState(1);
@@ -66,6 +72,9 @@ export const PayrollPage = () => {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isStructureModalOpen, setIsStructureModalOpen] = useState(false);
   const [editingStructure, setEditingStructure] = useState(null);
+
+  const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
   const [error, setError] = useState(null);
@@ -104,17 +113,21 @@ export const PayrollPage = () => {
     }
   };
 
-  // Fetch Structures
+  // Fetch Structures & Sequenced Rules
   const fetchStructures = async () => {
     if (!canExecutePayroll && !isHRManager) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await salaryStructureApi.getAll();
-      setStructures(res.data || []);
+      const [stRes, ruRes] = await Promise.all([
+        salaryStructureApi.getAll(),
+        salaryRuleApi.getAll().catch(() => ({ data: [] })),
+      ]);
+      setStructures(stRes.data || []);
+      setRules(ruRes.data || []);
     } catch (err) {
-      setError(err.message || 'Failed to load salary structures');
-      setToast({ message: err.message || 'Failed to load salary structures', type: 'error' });
+      setError(err.message || 'Failed to load salary structures & rules');
+      setToast({ message: err.message || 'Failed to load salary structures & rules', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -155,6 +168,27 @@ export const PayrollPage = () => {
     });
   };
 
+  const handleDeleteRule = (r) => {
+    setConfirmDelete({
+      type: 'rule',
+      data: r,
+      title: 'Delete Salary Rule',
+      message: `Are you sure you want to delete salary rule "${r.name}" (${r.code})? This action cannot be undone.`,
+      confirmText: 'Delete Rule',
+      variant: 'danger',
+    });
+  };
+
+  const handleEditRule = (r) => {
+    setEditingRule(r);
+    setIsRuleModalOpen(true);
+  };
+
+  const handleCreateRule = () => {
+    setEditingRule(null);
+    setIsRuleModalOpen(true);
+  };
+
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
     try {
@@ -166,6 +200,11 @@ export const PayrollPage = () => {
       } else if (confirmDelete.type === 'structure') {
         await salaryStructureApi.delete(confirmDelete.data._id);
         setToast({ message: `Salary structure ${confirmDelete.data.name} deleted`, type: 'success' });
+        setConfirmDelete(null);
+        fetchStructures();
+      } else if (confirmDelete.type === 'rule') {
+        await salaryRuleApi.delete(confirmDelete.data._id);
+        setToast({ message: `Salary rule ${confirmDelete.data.name} deleted`, type: 'success' });
         setConfirmDelete(null);
         fetchStructures();
       }
@@ -290,15 +329,24 @@ export const PayrollPage = () => {
             )}
 
             {activeTab === 'structures' && canManageSalaryRules && (
-              <button
-                onClick={() => {
-                  setEditingStructure(null);
-                  setIsStructureModalOpen(true);
-                }}
-                className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-              >
-                <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
-              </button>
+              structureSubTab === 'structures' ? (
+                <button
+                  onClick={() => {
+                    setEditingStructure(null);
+                    setIsStructureModalOpen(true);
+                  }}
+                  className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
+                </button>
+              ) : (
+                <button
+                  onClick={handleCreateRule}
+                  className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" /> Add Salary Rule
+                </button>
+              )
             )}
           </div>
         }
@@ -476,30 +524,72 @@ export const PayrollPage = () => {
         </div>
       )}
 
-      {/* Salary Structures Tab Content */}
+      {/* Salary Structures & Rules Tab Content (PDF Requirement A5 & A6) */}
       {activeTab === 'structures' && (
         <div className="space-y-4">
+          {/* Sub-tab Navigation */}
+          <div className="flex items-center space-x-2 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
+            <button
+              onClick={() => setStructureSubTab('structures')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center ${
+                structureSubTab === 'structures'
+                  ? 'bg-brand-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Layers className="w-4 h-4 mr-1.5" />
+              Salary Structures ({structures.length})
+            </button>
+            <button
+              onClick={() => setStructureSubTab('rules')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center ${
+                structureSubTab === 'rules'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Sliders className="w-4 h-4 mr-1.5" />
+              Salary Rules ({rules.length})
+            </button>
+          </div>
+
           {loading ? (
-            <LoadingSpinner label="Loading salary structures..." />
-          ) : structures.length === 0 ? (
+            <LoadingSpinner label="Loading compensation settings..." />
+          ) : structureSubTab === 'structures' ? (
+            structures.length === 0 ? (
+              <EmptyState
+                title="No salary structures configured"
+                description="Create a salary structure to group salary rules for payruns."
+                actionLabel={canManageSalaryRules ? 'Create Salary Structure' : null}
+                onAction={() => {
+                  setEditingStructure(null);
+                  setIsStructureModalOpen(true);
+                }}
+                icon={Layers}
+              />
+            ) : (
+              <SalaryStructureList
+                structures={structures}
+                onEditStructure={(s) => {
+                  setEditingStructure(s);
+                  setIsStructureModalOpen(true);
+                }}
+                onDeleteStructure={handleDeleteStructure}
+              />
+            )
+          ) : rules.length === 0 ? (
             <EmptyState
-              title="No salary structures configured"
-              description="Create a salary structure to group salary rules for payruns."
-              actionLabel={canManageSalaryRules ? 'Create Salary Structure' : null}
-              onAction={() => {
-                setEditingStructure(null);
-                setIsStructureModalOpen(true);
-              }}
-              icon={Layers}
+              title="No salary rules configured"
+              description="Configure salary rules to calculate earnings, allowances, deductions, and net take-home pay."
+              actionLabel={canManageSalaryRules ? 'Create Salary Rule' : null}
+              onAction={handleCreateRule}
+              icon={Sliders}
             />
           ) : (
-            <SalaryStructureList
-              structures={structures}
-              onEditStructure={(s) => {
-                setEditingStructure(s);
-                setIsStructureModalOpen(true);
-              }}
-              onDeleteStructure={handleDeleteStructure}
+            <SalaryRuleList
+              rules={rules}
+              onEditRule={handleEditRule}
+              onDeleteRule={handleDeleteRule}
             />
           )}
         </div>
@@ -524,6 +614,14 @@ export const PayrollPage = () => {
         isOpen={isStructureModalOpen}
         onClose={() => setIsStructureModalOpen(false)}
         structureToEdit={editingStructure}
+        onSuccess={handleSuccessToast}
+      />
+
+      {/* Salary Rule Form Modal (PDF Requirement A6) */}
+      <SalaryRuleFormModal
+        isOpen={isRuleModalOpen}
+        onClose={() => setIsRuleModalOpen(false)}
+        ruleToEdit={editingRule}
         onSuccess={handleSuccessToast}
       />
 

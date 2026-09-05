@@ -3,12 +3,18 @@ import { useAuth } from '../../context/AuthContext';
 import { payrunApi } from '../../api/payrunApi';
 import { salaryStructureApi } from '../../api/salaryStructureApi';
 import { salaryRuleApi } from '../../api/salaryRuleApi';
+import { dashboardApi } from '../../api/dashboardApi';
+import { DashboardFilters } from './DashboardFilters';
+import { DashboardKpiCards } from './DashboardKpiCards';
+import { PayrollCharts } from './PayrollCharts';
+import { OperationalAlerts } from './OperationalAlerts';
+import { AttendanceTimeOffOverview } from './AttendanceTimeOffOverview';
+import { DepartmentBreakdown } from './DepartmentBreakdown';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { Toast } from '../common/Toast';
 import { Link } from 'react-router-dom';
 import {
   IndianRupee,
-  TrendingUp,
   ShieldCheck,
   CheckCircle2,
   FileText,
@@ -17,56 +23,82 @@ import {
   ArrowRight,
   Layers,
   Building2,
-  Lock
+  Lock,
+  BarChart3
 } from 'lucide-react';
 
 export const PayrollManagerDashboard = () => {
   const { user } = useAuth();
 
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [toast, setToast] = useState({ message: '', type: 'success' });
 
+  // Filters State (PDF Requirement B9)
+  const [filters, setFilters] = useState({
+    period: 'all',
+    department: '',
+    employeeType: '',
+  });
+
+  // Consolidated Analytics Data
+  const [summaryData, setSummaryData] = useState({
+    kpis: {},
+    charts: { salaryCostByDepartment: [], monthlyNetSalaryTrends: [] },
+    alerts: {},
+    attendance: {},
+    timeOff: {},
+    departments: [],
+  });
+
+  // Payruns & Structures for Operational Quick Queue
   const [payruns, setPayruns] = useState([]);
   const [structures, setStructures] = useState([]);
   const [rules, setRules] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchPayrollManagerData = async () => {
-    setLoading(true);
+  // Fetch Consolidated Operational & Payroll Data
+  const fetchDashboardData = async (currentFilters = filters) => {
+    setAnalyticsLoading(true);
     try {
-      const [prRes, stRes, ruRes] = await Promise.all([
+      const [summaryRes, prRes, stRes, ruRes] = await Promise.all([
+        dashboardApi.getSummary(currentFilters).catch(() => ({ data: {} })),
         payrunApi.getAll({ limit: 10 }).catch(() => ({ data: [] })),
         salaryStructureApi.getAll().catch(() => ({ data: [] })),
-        salaryRuleApi.getAll().catch(() => ({ data: [] }))
+        salaryRuleApi.getAll().catch(() => ({ data: [] })),
       ]);
 
+      if (summaryRes.data) {
+        setSummaryData(summaryRes.data);
+      }
       setPayruns(prRes.data || []);
       setStructures(stRes.data || []);
       setRules(ruRes.data || []);
     } catch (err) {
-      console.error('Failed to load payroll manager data:', err);
+      console.error('Failed to load payroll manager dashboard:', err);
       setToast({ message: 'Error loading executive payroll metrics', type: 'error' });
     } finally {
       setLoading(false);
+      setAnalyticsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPayrollManagerData();
+    fetchDashboardData(filters);
   }, []);
 
-  // Calculate totals
-  const totalDisbursed = payruns.filter((p) => p.status === 'Paid').reduce((acc, p) => acc + (p.totalNet ?? p.totalNetPay ?? 0), 0);
-  const draftPayruns = payruns.filter((p) => p.status === 'Draft' || p.status === 'Computed');
-  const confirmedPayruns = payruns.filter((p) => p.status === 'Validated' || p.status === 'Confirmed');
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    fetchDashboardData(newFilters);
+  };
 
-  // Handle Payrun Status Transition
+  // Payrun Status Transitions
   const handleValidatePayrun = async (payrunId) => {
     setActionLoading(true);
     try {
       await payrunApi.validate(payrunId);
       setToast({ message: 'Payrun verified and approved into Confirmed status', type: 'success' });
-      fetchPayrollManagerData();
+      fetchDashboardData(filters);
     } catch (err) {
       setToast({ message: err.message || 'Failed to approve payrun', type: 'error' });
     } finally {
@@ -79,13 +111,16 @@ export const PayrollManagerDashboard = () => {
     try {
       await payrunApi.markPaid(payrunId, { paymentMethod: 'Bank Transfer' });
       setToast({ message: 'Payrun marked as Paid. Payslips disbursed to employees!', type: 'success' });
-      fetchPayrollManagerData();
+      fetchDashboardData(filters);
     } catch (err) {
       setToast({ message: err.message || 'Failed to finalize payrun', type: 'error' });
     } finally {
       setActionLoading(false);
     }
   };
+
+  const draftPayruns = payruns.filter((p) => p.status === 'Draft' || p.status === 'Computed');
+  const confirmedPayruns = payruns.filter((p) => p.status === 'Validated' || p.status === 'Confirmed');
 
   if (loading) {
     return <LoadingSpinner fullScreen label="Loading Executive Payroll & Compensation Dashboard..." />;
@@ -100,56 +135,59 @@ export const PayrollManagerDashboard = () => {
       />
 
       {/* Executive Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-indigo-950 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-md">
             <ShieldCheck className="w-4 h-4 mr-1 text-emerald-300" /> Executive Payroll & Compensation Controls
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome, {user?.name}!
           </h1>
-          <p className="text-sm text-emerald-100 max-w-2xl">
-            Oversee company-wide compensation structures, configure salary computation rules (Tax, PF, Allowances), approve payruns, and verify salary disbursements.
+          <p className="text-emerald-200/80 text-xs sm:text-sm max-w-2xl">
+            Real-time executive oversight of salary structures, rule calculations, approval queues, attendance quality, and period disbursements.
           </p>
-        </div>
-      </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Payroll Volume</span>
-          <div className="text-2xl font-extrabold text-emerald-700 mt-1">
-            ₹{totalDisbursed.toLocaleString('en-IN')}
+          <div className="pt-3 flex flex-wrap gap-2 sm:gap-3">
+            <Link
+              to="/payroll"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-white text-emerald-950 font-bold text-xs hover:bg-emerald-50 transition shadow-sm"
+            >
+              <PlayCircle className="w-3.5 h-3.5 mr-1.5 text-brand-600" />
+              Payrun Engine
+            </Link>
+            <Link
+              to="/payroll?tab=structures"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition shadow-xs"
+            >
+              <Sliders className="w-3.5 h-3.5 mr-1.5 text-teal-300" />
+              Salary Structures & Rules
+            </Link>
+            <Link
+              to="/reports"
+              className="inline-flex items-center px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition shadow-xs"
+            >
+              <BarChart3 className="w-3.5 h-3.5 mr-1.5 text-indigo-300" />
+              Audit Reports
+            </Link>
           </div>
-          <span className="text-xs text-gray-500 mt-2 block">All completed payruns</span>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Awaiting Confirmation</span>
-          <div className="text-2xl font-extrabold text-amber-600 mt-1">{draftPayruns.length}</div>
-          <span className="text-xs text-amber-700 font-semibold mt-2 block">
-            {draftPayruns.length > 0 ? 'Action required for approval' : 'Queue clear'}
-          </span>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Configured Salary Rules</span>
-          <div className="text-2xl font-extrabold text-indigo-600 mt-1">{rules.length}</div>
-          <Link to="/payroll" className="text-xs text-indigo-600 font-semibold hover:underline mt-2 block">
-            Manage Rules & Taxes →
-          </Link>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Salary Structures</span>
-          <div className="text-2xl font-extrabold text-slate-800 mt-1">{structures.length}</div>
-          <Link to="/payroll" className="text-xs text-slate-600 font-semibold hover:underline mt-2 block">
-            Manage Templates →
-          </Link>
         </div>
       </div>
 
-      {/* Two Column Layout: Payruns Awaiting Approval & Structure Overview */}
+      {/* 1. Live Filtering Controls (PDF Requirement B9) */}
+      <DashboardFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onRefresh={() => fetchDashboardData(filters)}
+        loading={analyticsLoading}
+      />
+
+      {/* 2. Primary KPI Cards (PDF Requirement B9) */}
+      <DashboardKpiCards kpis={summaryData.kpis || {}} loading={analyticsLoading} />
+
+      {/* 3. Operational Alerts (PDF Requirement B9) */}
+      <OperationalAlerts alerts={summaryData.alerts || {}} loading={analyticsLoading} />
+
+      {/* 4. Two Column Layout: Payruns Approvals Queue & Salary Structures */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Payruns Approval Queue */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm flex flex-col justify-between">
@@ -229,9 +267,9 @@ export const PayrollManagerDashboard = () => {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-gray-900 flex items-center">
                 <Sliders className="w-5 h-5 mr-2 text-teal-600" />
-                Active Salary Structures & Rules
+                Active Salary Structures ({structures.length}) & Rules ({rules.length})
               </h3>
-              <Link to="/payroll" className="text-xs text-teal-600 font-semibold hover:underline">
+              <Link to="/payroll?tab=structures" className="text-xs text-teal-600 font-semibold hover:underline">
                 Configure
               </Link>
             </div>
@@ -258,14 +296,27 @@ export const PayrollManagerDashboard = () => {
 
           <div className="mt-4 pt-4 border-t border-gray-100">
             <Link
-              to="/payroll"
+              to="/payroll?tab=structures"
               className="text-xs text-gray-500 hover:text-brand-600 font-semibold flex items-center justify-center"
             >
-              Add New Salary Structure or Tax Rule <ArrowRight className="w-3 h-3 ml-1" />
+              Configure Structures & Formula Rules <ArrowRight className="w-3 h-3 ml-1" />
             </Link>
           </div>
         </div>
       </div>
+
+      {/* 5. Responsive Interactive Charts (PDF Requirement B9) */}
+      <PayrollCharts charts={summaryData.charts || {}} loading={analyticsLoading} />
+
+      {/* 6. Department Headcount & Salary Breakdown (PDF Requirement B9) */}
+      <DepartmentBreakdown departments={summaryData.departments || []} loading={analyticsLoading} />
+
+      {/* 7. Attendance & Time Off Health Overview (PDF Requirement B9) */}
+      <AttendanceTimeOffOverview
+        attendance={summaryData.attendance || {}}
+        timeOff={summaryData.timeOff || {}}
+        loading={analyticsLoading}
+      />
     </div>
   );
 };

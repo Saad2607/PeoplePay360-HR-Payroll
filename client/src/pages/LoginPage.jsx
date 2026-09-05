@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Loader2, ShieldCheck, User } from 'lucide-react';
+import { Lock, Mail, Loader2, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -9,12 +9,14 @@ export const LoginPage = () => {
 
   const [email, setEmail] = useState('hrmanager@peoplepay360.com');
   const [password, setPassword] = useState('Password123!');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const demoAccounts = [
-    { role: 'HR Manager (Priya)', email: 'hrmanager@peoplepay360.com' },
     { role: 'System Admin', email: 'admin@peoplepay360.com' },
+    { role: 'HR Manager (Priya)', email: 'hrmanager@peoplepay360.com' },
+    { role: 'HR Payroll Manager (Vikram)', email: 'payrollmanager@peoplepay360.com' },
     { role: 'HR Payroll User (Krish)', email: 'payrolluser@peoplepay360.com' },
     { role: 'Standard Employee (Rohan)', email: 'employee@peoplepay360.com' },
   ];
@@ -80,13 +82,26 @@ export const LoginPage = () => {
             <div className="relative">
               <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 focus:outline-none transition p-0.5"
+                title={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <Eye className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
             </div>
           </div>
 
