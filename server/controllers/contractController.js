@@ -1,28 +1,15 @@
-const Contract = require('../models/Contract');
-const Employee = require('../models/Employee');
-const { successResponse, errorResponse } = require('../utils/apiResponse');
+const contractService = require('../services/contractService');
+const { successResponse, paginatedResponse } = require('../utils/apiResponse');
 
 /**
  * @route   GET /api/contracts
- * @desc    Get all contracts with filters
- * @access  Private (Admin, HR)
+ * @desc    Get all contracts with filters and pagination
+ * @access  Private (HR Managers, Admin)
  */
 const getContracts = async (req, res, next) => {
   try {
-    const { status, department, employee } = req.query;
-    const filter = {};
-
-    if (status) filter.status = status;
-    if (department) filter.department = department;
-    if (employee) filter.employee = employee;
-
-    const contracts = await Contract.find(filter)
-      .populate('employee', 'name email employeeId')
-      .populate('department', 'name code')
-      .populate('jobPosition', 'name')
-      .sort({ createdAt: -1 });
-
-    return successResponse(res, contracts, 'Contracts retrieved successfully');
+    const { contracts, total, page, limit } = await contractService.getContracts(req.query);
+    return paginatedResponse(res, contracts, page, limit, total, 'Contracts retrieved successfully');
   } catch (error) {
     next(error);
   }
@@ -35,15 +22,7 @@ const getContracts = async (req, res, next) => {
  */
 const getContractById = async (req, res, next) => {
   try {
-    const contract = await Contract.findById(req.params.id)
-      .populate('employee', 'name email employeeId')
-      .populate('department', 'name code')
-      .populate('jobPosition', 'name');
-
-    if (!contract) {
-      return errorResponse(res, 'Contract not found', 404);
-    }
-
+    const contract = await contractService.getContractById(req.params.id);
     return successResponse(res, contract, 'Contract retrieved successfully');
   } catch (error) {
     next(error);
@@ -52,17 +31,30 @@ const getContractById = async (req, res, next) => {
 
 /**
  * @route   GET /api/contracts/employee/:employeeId
- * @desc    Get all contracts for a specific employee (including historical contracts)
+ * @desc    Get all contracts for a specific employee (Historical contracts)
  * @access  Private
  */
 const getContractsByEmployee = async (req, res, next) => {
   try {
-    const contracts = await Contract.find({ employee: req.params.employeeId })
-      .populate('department', 'name code')
-      .populate('jobPosition', 'name')
-      .sort({ startDate: -1 });
+    const contracts = await contractService.getContractsByEmployee(req.params.employeeId);
+    return successResponse(res, contracts, 'Employee contract history retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+};
 
-    return successResponse(res, contracts, 'Employee contracts retrieved successfully');
+/**
+ * @route   GET /api/contracts/active/:employeeId
+ * @desc    Get currently active contract for an employee
+ * @access  Private
+ */
+const getActiveContract = async (req, res, next) => {
+  try {
+    const contract = await contractService.getActiveContract(req.params.employeeId);
+    if (!contract) {
+      return successResponse(res, null, 'No active contract found for this employee');
+    }
+    return successResponse(res, contract, 'Active contract retrieved successfully');
   } catch (error) {
     next(error);
   }
@@ -70,26 +62,13 @@ const getContractsByEmployee = async (req, res, next) => {
 
 /**
  * @route   POST /api/contracts
- * @desc    Create a new contract
- * @access  Private (Admin, HR)
+ * @desc    Create a new contract (with overlap prevention)
+ * @access  Private (HR Managers, Admin)
  */
 const createContract = async (req, res, next) => {
   try {
-    const contract = await Contract.create(req.body);
-
-    // If this contract is Active, set it as the employee's activeContract
-    if (contract.status === 'Active') {
-      await Employee.findByIdAndUpdate(contract.employee, {
-        activeContract: contract._id
-      });
-    }
-
-    const populated = await Contract.findById(contract._id)
-      .populate('employee', 'name email employeeId')
-      .populate('department', 'name code')
-      .populate('jobPosition', 'name');
-
-    return successResponse(res, populated, 'Contract created successfully', 201);
+    const contract = await contractService.createContract(req.body);
+    return successResponse(res, contract, 'Contract created successfully', 201);
   } catch (error) {
     next(error);
   }
@@ -97,31 +76,27 @@ const createContract = async (req, res, next) => {
 
 /**
  * @route   PUT /api/contracts/:id
- * @desc    Update contract
- * @access  Private (Admin, HR)
+ * @desc    Update a contract (with overlap prevention)
+ * @access  Private (HR Managers, Admin)
  */
 const updateContract = async (req, res, next) => {
   try {
-    const contract = await Contract.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    })
-      .populate('employee', 'name email employeeId')
-      .populate('department', 'name code')
-      .populate('jobPosition', 'name');
-
-    if (!contract) {
-      return errorResponse(res, 'Contract not found', 404);
-    }
-
-    // If updated to Active, make sure employee's activeContract points here
-    if (contract.status === 'Active') {
-      await Employee.findByIdAndUpdate(contract.employee, {
-        activeContract: contract._id
-      });
-    }
-
+    const contract = await contractService.updateContract(req.params.id, req.body);
     return successResponse(res, contract, 'Contract updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   DELETE /api/contracts/:id
+ * @desc    Delete a contract
+ * @access  Private (Admin only)
+ */
+const deleteContract = async (req, res, next) => {
+  try {
+    const contract = await contractService.deleteContract(req.params.id);
+    return successResponse(res, contract, 'Contract deleted successfully');
   } catch (error) {
     next(error);
   }
@@ -131,6 +106,8 @@ module.exports = {
   getContracts,
   getContractById,
   getContractsByEmployee,
+  getActiveContract,
   createContract,
-  updateContract
+  updateContract,
+  deleteContract
 };
