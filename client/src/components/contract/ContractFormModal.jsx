@@ -363,7 +363,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                  Wage Amount ($) *
+                  Wage Amount (₹) *
                 </label>
                 <input
                   type="number"
@@ -387,7 +387,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
-                  Basic Salary ($) *
+                  Basic Salary (₹) *
                 </label>
                 <input
                   type="number"
@@ -406,7 +406,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-emerald-700 uppercase mb-1">
-                  House Rent Allowance ($)
+                  House Rent Allowance (₹)
                 </label>
                 <input
                   type="number"
@@ -430,7 +430,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-emerald-700 uppercase mb-1">
-                  Transport Allowance ($)
+                  Transport Allowance (₹)
                 </label>
                 <input
                   type="number"
@@ -454,7 +454,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-emerald-700 uppercase mb-1">
-                  Medical Allowance ($)
+                  Medical Allowance (₹)
                 </label>
                 <input
                   type="number"
@@ -478,7 +478,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-rose-700 uppercase mb-1">
-                  Tax Deduction ($)
+                  Tax Deduction (₹)
                 </label>
                 <input
                   type="number"
@@ -502,7 +502,7 @@ export const ContractFormModal = ({ isOpen, onClose, contractToEdit = null, pres
 
               <div>
                 <label className="block text-xs font-semibold text-rose-700 uppercase mb-1">
-                  Provident Fund ($)
+                  Provident Fund (₹)
                 </label>
                 <input
                   type="number"

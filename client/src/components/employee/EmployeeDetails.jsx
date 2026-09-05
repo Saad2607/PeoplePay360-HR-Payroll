@@ -304,7 +304,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                   <div>
                     <span className="text-xs text-gray-400 uppercase font-semibold block">Wage</span>
                     <span className="font-bold text-gray-900 text-base">
-                      ${activeContract.wage ? activeContract.wage.toLocaleString() : 0}
+                      ₹{activeContract.wage ? activeContract.wage.toLocaleString('en-IN') : 0}
                     </span>
                     <span className="text-xs text-gray-500 ml-1">/{activeContract.wageType || 'Annual'}</span>
                   </div>
@@ -312,7 +312,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                   <div>
                     <span className="text-xs text-gray-400 uppercase font-semibold block">Basic Salary</span>
                     <span className="font-semibold text-gray-800">
-                      ${activeContract.salaryStructure?.basic?.toLocaleString() || 0}
+                      ₹{activeContract.salaryStructure?.basic?.toLocaleString('en-IN') || 0}
                     </span>
                   </div>
                 </div>
@@ -323,16 +323,16 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                     <div className="font-semibold text-gray-700">Salary Breakdown</div>
                     <div className="flex justify-between text-gray-600">
                       <span>House Rent Allowance:</span>
-                      <span className="font-mono">${activeContract.salaryStructure.allowances?.houseRent || 0}</span>
+                      <span className="font-mono">₹{(activeContract.salaryStructure.allowances?.houseRent || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Transport Allowance:</span>
-                      <span className="font-mono">${activeContract.salaryStructure.allowances?.transport || 0}</span>
+                      <span className="font-mono">₹{(activeContract.salaryStructure.allowances?.transport || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Income Tax Deduction:</span>
                       <span className="font-mono text-rose-600">
-                        -${activeContract.salaryStructure.deductions?.tax || 0}
+                        -₹{(activeContract.salaryStructure.deductions?.tax || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
                   </div>
@@ -405,14 +405,14 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                   <div className="flex items-center space-x-6 text-sm">
                     <div>
                       <span className="text-xs text-gray-400 block">Wage</span>
-                      <span className="font-bold text-gray-900">${ctr.wage?.toLocaleString()}</span>
+                      <span className="font-bold text-gray-900">₹{ctr.wage?.toLocaleString('en-IN')}</span>
                       <span className="text-xs text-gray-500">/{ctr.wageType || 'Annual'}</span>
                     </div>
 
                     <div>
                       <span className="text-xs text-gray-400 block">Basic Salary</span>
                       <span className="font-semibold text-gray-700">
-                        ${ctr.salaryStructure?.basic?.toLocaleString() || 0}
+                        ₹{ctr.salaryStructure?.basic?.toLocaleString('en-IN') || 0}
                       </span>
                     </div>
                   </div>

@@ -58,12 +58,12 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <div className="font-bold text-gray-900">${ctr.wage ? ctr.wage.toLocaleString() : 0}</div>
+                    <div className="font-bold text-gray-900">₹{ctr.wage ? ctr.wage.toLocaleString('en-IN') : 0}</div>
                     <div className="text-xs text-gray-500">{ctr.wageType || 'Annual'}</div>
                   </td>
 
                   <td className="py-3.5 px-4 font-semibold text-gray-700">
-                    ${ctr.salaryStructure?.basic ? ctr.salaryStructure.basic.toLocaleString() : 0}
+                    ₹{ctr.salaryStructure?.basic ? ctr.salaryStructure.basic.toLocaleString('en-IN') : 0}
                   </td>
 
                   <td className="py-3.5 px-4 text-xs text-gray-500">

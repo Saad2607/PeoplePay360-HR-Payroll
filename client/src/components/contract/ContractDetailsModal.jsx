@@ -73,7 +73,7 @@ export const ContractDetailsModal = ({ isOpen, onClose, contract }) => {
 
           <div className="text-right">
             <div className="text-xs text-gray-400 font-semibold uppercase">Total Wage</div>
-            <div className="text-2xl font-bold text-gray-900">${contract.wage?.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-gray-900">₹{contract.wage?.toLocaleString('en-IN')}</div>
             <div className="text-xs text-gray-500">{contract.wageType || 'Annual'}</div>
           </div>
         </div>
@@ -122,41 +122,41 @@ export const ContractDetailsModal = ({ isOpen, onClose, contract }) => {
             <div className="space-y-2 text-xs">
               <div className="flex justify-between font-semibold">
                 <span className="text-gray-700">Basic Salary:</span>
-                <span className="font-mono">${basic.toLocaleString()}</span>
+                <span className="font-mono">₹{basic.toLocaleString('en-IN')}</span>
               </div>
 
               <div className="pt-1 border-t border-gray-100">
-                <span className="text-emerald-700 font-semibold block mb-1">Allowances (+${totalAllowances})</span>
+                <span className="text-emerald-700 font-semibold block mb-1">Allowances (+₹{totalAllowances.toLocaleString('en-IN')})</span>
                 <div className="pl-2 space-y-1 text-gray-600">
                   <div className="flex justify-between">
                     <span>House Rent:</span>
-                    <span>${allowances.houseRent || 0}</span>
+                    <span>₹{(allowances.houseRent || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Transport:</span>
-                    <span>${allowances.transport || 0}</span>
+                    <span>₹{(allowances.transport || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Medical:</span>
-                    <span>${allowances.medical || 0}</span>
+                    <span>₹{(allowances.medical || 0).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
 
               <div className="pt-1 border-t border-gray-100">
-                <span className="text-rose-700 font-semibold block mb-1">Deductions (-${totalDeductions})</span>
+                <span className="text-rose-700 font-semibold block mb-1">Deductions (-₹{totalDeductions.toLocaleString('en-IN')})</span>
                 <div className="pl-2 space-y-1 text-gray-600">
                   <div className="flex justify-between">
                     <span>Income Tax:</span>
-                    <span>${deductions.tax || 0}</span>
+                    <span>₹{(deductions.tax || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Provident Fund:</span>
-                    <span>${deductions.providentFund || 0}</span>
+                    <span>₹{(deductions.providentFund || 0).toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Insurance:</span>
-                    <span>${deductions.insurance || 0}</span>
+                    <span>₹{(deductions.insurance || 0).toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export const ContractDetailsModal = ({ isOpen, onClose, contract }) => {
               <div className="font-bold flex items-center">
                 <CheckCircle2 className="w-4 h-4 mr-1 text-emerald-600" /> Applicable Contract Identified: {engineResult.contractNumber}
               </div>
-              <div>Wage: ${engineResult.wage} | Status: {engineResult.status}</div>
+              <div>Wage: ₹{engineResult.wage?.toLocaleString('en-IN')} | Status: {engineResult.status}</div>
             </div>
           )}
 
