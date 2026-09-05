@@ -16,6 +16,7 @@ const timeOffRequestRoutes = require('./timeOffRequestRoutes');
 const salaryStructureRoutes = require('./salaryStructureRoutes');
 const salaryRuleRoutes = require('./salaryRuleRoutes');
 const payrollRoutes = require('./payrollRoutes');
+const payrunRoutes = require('./payrunRoutes');
 
 // API Health Check
 router.get('/health', (req, res) => {
@@ -46,5 +47,6 @@ router.use('/time-off-requests', timeOffRequestRoutes);
 router.use('/salary-structures', salaryStructureRoutes);
 router.use('/salary-rules', salaryRuleRoutes);
 router.use('/payroll', payrollRoutes);
+router.use('/payruns', payrunRoutes);
 
 module.exports = router;

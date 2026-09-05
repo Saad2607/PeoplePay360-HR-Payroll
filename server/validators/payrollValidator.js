@@ -174,10 +174,83 @@ const calculatePayslipValidator = [
     .withMessage('salaryStructureId must be a valid MongoDB ObjectId')
 ];
 
+// Payrun Wizard Validators
+const wizardEligibleEmployeesValidator = [
+  body('salaryStructureId')
+    .notEmpty()
+    .withMessage('salaryStructureId is required')
+    .isMongoId()
+    .withMessage('salaryStructureId must be a valid MongoDB ObjectId'),
+  body('period.startDate')
+    .notEmpty()
+    .withMessage('period.startDate is required')
+    .isISO8601()
+    .withMessage('period.startDate must be an ISO8601 date'),
+  body('period.endDate')
+    .notEmpty()
+    .withMessage('period.endDate is required')
+    .isISO8601()
+    .withMessage('period.endDate must be an ISO8601 date')
+];
+
+const createPayrunValidator = [
+  body('name')
+    .notEmpty()
+    .withMessage('Payrun name is required')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 150 })
+    .withMessage('Payrun name must be between 3 and 150 characters'),
+  body('salaryStructureId')
+    .notEmpty()
+    .withMessage('salaryStructureId is required')
+    .isMongoId()
+    .withMessage('salaryStructureId must be a valid MongoDB ObjectId'),
+  body('period.startDate')
+    .notEmpty()
+    .withMessage('period.startDate is required')
+    .isISO8601()
+    .withMessage('period.startDate must be an ISO8601 date'),
+  body('period.endDate')
+    .notEmpty()
+    .withMessage('period.endDate is required')
+    .isISO8601()
+    .withMessage('period.endDate must be an ISO8601 date'),
+  body('selectedEmployees')
+    .isArray({ min: 1 })
+    .withMessage('At least one employee must be selected for the payrun'),
+  body('selectedEmployees.*')
+    .isMongoId()
+    .withMessage('Each selected employee must be a valid MongoDB ObjectId'),
+  body('notes')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+];
+
+const markPaidValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('Payrun ID must be a valid MongoDB ObjectId'),
+  body('paymentMethod')
+    .optional()
+    .isIn(['Bank Transfer', 'Cheque', 'Direct Deposit', 'Cash'])
+    .withMessage('Invalid payment method'),
+  body('reference')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 100 })
+];
+
 module.exports = {
   createSalaryStructureValidator,
   updateSalaryStructureValidator,
   createSalaryRuleValidator,
   updateSalaryRuleValidator,
-  calculatePayslipValidator
+  calculatePayslipValidator,
+  wizardEligibleEmployeesValidator,
+  createPayrunValidator,
+  markPaidValidator
 };
