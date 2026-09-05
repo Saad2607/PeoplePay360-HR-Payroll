@@ -2,18 +2,35 @@ const express = require('express');
 const router = express.Router();
 const { successResponse } = require('../utils/apiResponse');
 
-// Health and API Status
+// Sub-route imports
+const authRoutes = require('./authRoutes');
+const employeeRoutes = require('./employeeRoutes');
+const departmentRoutes = require('./departmentRoutes');
+const jobPositionRoutes = require('./jobPositionRoutes');
+const contractRoutes = require('./contractRoutes');
+const scheduleRoutes = require('./scheduleRoutes');
+
+// API Health Check
 router.get('/health', (req, res) => {
   return successResponse(
     res,
     {
       status: 'UP',
-      uptime: process.uptime(),
+      uptime: `${Math.floor(process.uptime())}s`,
       timestamp: new Date().toISOString(),
-      service: 'PeoplePay360 API'
+      service: 'PeoplePay360 HR & Payroll Core API',
+      version: '1.0.0'
     },
-    'PeoplePay360 API is running smoothly'
+    'PeoplePay360 API is healthy and running'
   );
 });
+
+// Mount Resource Routes
+router.use('/auth', authRoutes);
+router.use('/employees', employeeRoutes);
+router.use('/departments', departmentRoutes);
+router.use('/job-positions', jobPositionRoutes);
+router.use('/contracts', contractRoutes);
+router.use('/schedules', scheduleRoutes);
 
 module.exports = router;
