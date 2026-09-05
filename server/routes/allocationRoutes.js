@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const allocationController = require('../controllers/allocationController');
 const { authenticate, authorize } = require('../middleware/auth');
+const { HR_MANAGERS } = require('../config/roles');
 const validate = require('../middleware/validate');
 const {
   createAllocationValidator,
@@ -24,7 +25,7 @@ router.get('/:id', allocationController.getAllocationById);
 // Admin & HR management
 router.post(
   '/',
-  authorize('Admin', 'HR'),
+  authorize(...HR_MANAGERS),
   createAllocationValidator,
   validate,
   allocationController.createAllocation
@@ -32,7 +33,7 @@ router.post(
 
 router.put(
   '/:id',
-  authorize('Admin', 'HR'),
+  authorize(...HR_MANAGERS),
   updateAllocationValidator,
   validate,
   allocationController.updateAllocation

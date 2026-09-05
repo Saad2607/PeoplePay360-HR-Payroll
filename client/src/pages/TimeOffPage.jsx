@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 
 export const TimeOffPage = () => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
 
   const [activeTab, setActiveTab] = useState('requests'); // 'requests' | 'allocations' | 'types'
 
@@ -85,14 +85,16 @@ export const TimeOffPage = () => {
     setLoading(true);
     setError(null);
     try {
+      const empId = typeof user?.employee === 'object' ? user?.employee?._id : user?.employee;
       const [allocRes, balRes] = await Promise.all([
         allocationApi.getAll(),
-        user?.employee?._id
-          ? allocationApi.getEmployeeBalance(user.employee._id)
+        empId
+          ? allocationApi.getEmployeeBalance(empId)
           : Promise.resolve({ data: [] }),
       ]);
       setAllocations(allocRes.data || []);
-      setBalances(balRes.data || []);
+      const balData = balRes.data?.balances || (Array.isArray(balRes.data) ? balRes.data : []);
+      setBalances(balData);
     } catch (err) {
       setError(err.message || 'Failed to fetch leave allocations');
       setToast({ message: err.message || 'Failed to fetch leave allocations', type: 'error' });
@@ -204,7 +206,7 @@ export const TimeOffPage = () => {
               </button>
             )}
 
-            {activeTab === 'allocations' && isHRManager && (
+            {activeTab === 'allocations' && canManageHR && (
               <button
                 onClick={() => setIsAllocationModalOpen(true)}
                 className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
@@ -213,7 +215,7 @@ export const TimeOffPage = () => {
               </button>
             )}
 
-            {activeTab === 'types' && isHRManager && (
+            {activeTab === 'types' && canManageHR && (
               <button
                 onClick={() => {
                   setEditingType(null);
@@ -361,7 +363,7 @@ export const TimeOffPage = () => {
             <EmptyState
               title="No leave allocations"
               description="No allocations granted yet."
-              actionLabel={isHRManager ? 'Grant Allocation' : null}
+              actionLabel={canManageHR ? 'Grant Allocation' : null}
               onAction={() => setIsAllocationModalOpen(true)}
               icon={Layers}
             />
@@ -380,7 +382,7 @@ export const TimeOffPage = () => {
             <EmptyState
               title="No time off types configured"
               description="Create leave types such as Paid Time Off, Sick Leave, or Unpaid Leave."
-              actionLabel={isHRManager ? 'Add Leave Type' : null}
+              actionLabel={canManageHR ? 'Add Leave Type' : null}
               onAction={() => {
                 setEditingType(null);
                 setIsTypeModalOpen(true);

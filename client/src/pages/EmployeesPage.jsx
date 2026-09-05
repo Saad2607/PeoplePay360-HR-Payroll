@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { Search, Filter, Plus, LayoutList, Kanban, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const EmployeesPage = () => {
-  const { isHRManager, isAdmin } = useAuth();
+  const { canManageHR, isAdmin } = useAuth();
 
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -195,7 +195,7 @@ export const EmployeesPage = () => {
               </button>
             </div>
 
-            {isHRManager && (
+            {canManageHR && (
               <button
                 onClick={handleCreateNew}
                 className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
@@ -299,7 +299,7 @@ export const EmployeesPage = () => {
         <EmptyState
           title="No employees found"
           description="No employee records match your search or filter parameters."
-          actionLabel={isHRManager ? 'Add New Employee' : null}
+          actionLabel={canManageHR ? 'Add New Employee' : null}
           onAction={handleCreateNew}
         />
       ) : viewMode === 'table' ? (

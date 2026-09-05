@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { payrunApi } from '../api/payrunApi';
 import { payslipApi } from '../api/payslipApi';
 import { salaryStructureApi } from '../api/salaryStructureApi';
@@ -18,18 +18,23 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import {
-  DollarSign,
+  IndianRupee,
   Plus,
   PlayCircle,
   FileText,
   Layers,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Lock,
+  Users,
+  Clock,
+  Calendar,
+  AlertTriangle
 } from 'lucide-react';
 
 export const PayrollPage = () => {
-  const { isHRManager, isPayrollUser } = useAuth();
+  const { isEmployee, isHRManager, isPayrollUser, isPayrollManager, isAdmin, canExecutePayroll, canManageSalaryRules } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const urlTab = searchParams.get('tab');
@@ -68,6 +73,7 @@ export const PayrollPage = () => {
 
   // Fetch Payruns
   const fetchPayruns = async () => {
+    if (!canExecutePayroll && !isHRManager) return;
     setLoading(true);
     setError(null);
     try {
@@ -82,7 +88,7 @@ export const PayrollPage = () => {
     }
   };
 
-  // Fetch Payslips
+  // Fetch Payslips (works for both employee self-service and payroll managers)
   const fetchPayslips = async () => {
     setLoading(true);
     setError(null);
@@ -100,6 +106,7 @@ export const PayrollPage = () => {
 
   // Fetch Structures
   const fetchStructures = async () => {
+    if (!canExecutePayroll && !isHRManager) return;
     setLoading(true);
     setError(null);
     try {
@@ -114,12 +121,17 @@ export const PayrollPage = () => {
   };
 
   useEffect(() => {
+    if (isEmployee) {
+      fetchPayslips();
+      return;
+    }
+
     if (!selectedPayrunId) {
       if (activeTab === 'payruns') fetchPayruns();
       else if (activeTab === 'payslips') fetchPayslips();
       else if (activeTab === 'structures') fetchStructures();
     }
-  }, [activeTab, page, selectedPayrunId]);
+  }, [activeTab, page, selectedPayrunId, isEmployee, canExecutePayroll, isHRManager]);
 
   const handleDeletePayrun = (run) => {
     setConfirmDelete({
@@ -170,6 +182,74 @@ export const PayrollPage = () => {
     else if (activeTab === 'structures') fetchStructures();
   };
 
+  // 2. Employee Persona — Self-Service Payslips History
+  if (isEmployee) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900 flex items-center">
+              <IndianRupee className="w-7 h-7 text-emerald-600 mr-2" />
+              My Payslips & Compensation History
+            </h1>
+            <p className="text-sm text-gray-500">
+              Access issued paystubs, review gross-to-net deductions breakdown, and download printable vector PDF slips.
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <LoadingSpinner label="Loading your payslips history..." />
+        ) : payslips.length === 0 ? (
+          <EmptyState
+            title="No payslips issued yet"
+            description="Your payslips will appear here once payroll processing for your pay cycle is completed."
+            icon={FileText}
+          />
+        ) : (
+          <div className="space-y-4">
+            <PayslipList
+              payslips={payslips}
+              onViewDetails={(id) => setSelectedPayslipId(id)}
+            />
+
+            {meta.totalPages > 1 && (
+              <div className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-gray-200">
+                <span className="text-xs text-gray-500">
+                  Page <span className="font-semibold text-gray-900">{page}</span> of{' '}
+                  <span className="font-semibold text-gray-900">{meta.totalPages}</span> ({meta.total} total)
+                </span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="p-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    disabled={page >= meta.totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="p-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <PayslipDetailsModal
+          isOpen={!!selectedPayslipId}
+          onClose={() => setSelectedPayslipId(null)}
+          payslipId={selectedPayslipId}
+        />
+      </div>
+    );
+  }
+
+  // 3. Payroll Administrators Persona (HR Payroll User, HR Payroll Manager, Admin)
   if (selectedPayrunId) {
     return (
       <div className="p-2">
@@ -200,7 +280,7 @@ export const PayrollPage = () => {
         ]}
         actions={
           <div className="flex items-center space-x-3">
-            {activeTab === 'payruns' && isPayrollUser && (
+            {activeTab === 'payruns' && canExecutePayroll && (
               <button
                 onClick={() => setIsWizardOpen(true)}
                 className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
@@ -209,7 +289,7 @@ export const PayrollPage = () => {
               </button>
             )}
 
-            {activeTab === 'structures' && isHRManager && (
+            {activeTab === 'structures' && canManageSalaryRules && (
               <button
                 onClick={() => {
                   setEditingStructure(null);
@@ -223,6 +303,18 @@ export const PayrollPage = () => {
           </div>
         }
       />
+
+      {/* Auditor Notice for HR Managers */}
+      {isHRManager && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-amber-900 text-xs shadow-xs">
+          <div className="flex items-center space-x-2.5">
+            <Lock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <div>
+              <span className="font-bold">Auditor Mode (HR Manager):</span> You have read-only access to audit payruns, inspect itemized payslips, and download statement PDFs. Execution (Drafting, Computing, Approving, and Disbursing) is reserved for Payroll Users & Managers.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Error Message with Retry */}
       {error && (
@@ -293,7 +385,7 @@ export const PayrollPage = () => {
             <EmptyState
               title="No payruns found"
               description="Start a new payrun wizard to select salary structures, eligible staff, and compute payslips."
-              actionLabel={isPayrollUser ? 'Launch New Payrun Wizard' : null}
+              actionLabel={canExecutePayroll ? 'Launch New Payrun Wizard' : null}
               onAction={() => setIsWizardOpen(true)}
               icon={PlayCircle}
             />
@@ -393,7 +485,7 @@ export const PayrollPage = () => {
             <EmptyState
               title="No salary structures configured"
               description="Create a salary structure to group salary rules for payruns."
-              actionLabel={isHRManager ? 'Create Salary Structure' : null}
+              actionLabel={canManageSalaryRules ? 'Create Salary Structure' : null}
               onAction={() => {
                 setEditingStructure(null);
                 setIsStructureModalOpen(true);

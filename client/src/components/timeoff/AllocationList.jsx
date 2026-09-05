@@ -4,34 +4,42 @@ import { Calendar, CheckCircle2, Clock, ShieldCheck, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const AllocationList = ({ allocations, balances = [], onEditAllocation }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
 
   return (
     <div className="space-y-6">
       {/* Leave Balance Cards */}
       {balances.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {balances.map((b, idx) => (
-            <div key={b.timeOffTypeCode || b._id || idx} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-gray-500 uppercase">
-                <span>{b.timeOffTypeName || b.timeOffTypeCode}</span>
-                <span className="font-mono text-[11px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">
-                  {b.unit || 'days'}
-                </span>
-              </div>
+          {balances.map((b, idx) => {
+            const typeName = b.timeOffType?.name || b.timeOffTypeName || b.timeOffType?.code || 'Leave';
+            const unit = b.timeOffType?.unit || b.unit || 'days';
+            const remaining = b.remainingAmount !== undefined ? b.remainingAmount : (b.remaining || 0);
+            const allocated = b.allocatedAmount !== undefined ? b.allocatedAmount : (b.allocated || 0);
+            const taken = b.takenAmount !== undefined ? b.takenAmount : (b.taken || 0);
 
-              <div className="flex items-baseline justify-between pt-1">
-                <div>
-                  <span className="text-2xl font-extrabold text-gray-900">{b.remaining}</span>
-                  <span className="text-xs text-gray-400 ml-1">left</span>
+            return (
+              <div key={b.allocationId || b._id || idx} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-gray-500 uppercase">
+                  <span>{typeName}</span>
+                  <span className="font-mono text-[11px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">
+                    {unit}
+                  </span>
                 </div>
-                <div className="text-xs text-right text-gray-500">
-                  <div>Allocated: <span className="font-semibold text-gray-800">{b.allocated}</span></div>
-                  <div>Taken: <span className="font-semibold text-rose-600">{b.taken}</span></div>
+
+                <div className="flex items-baseline justify-between pt-1">
+                  <div>
+                    <span className="text-2xl font-extrabold text-gray-900">{remaining}</span>
+                    <span className="text-xs text-gray-400 ml-1">left</span>
+                  </div>
+                  <div className="text-xs text-right text-gray-500">
+                    <div>Allocated: <span className="font-semibold text-gray-800">{allocated}</span></div>
+                    <div>Taken: <span className="font-semibold text-rose-600">{taken}</span></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

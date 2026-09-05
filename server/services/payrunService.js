@@ -1,8 +1,16 @@
-const Payrun = require('../models/Payrun');
-const Employee = require('../models/Employee');
-const Contract = require('../models/Contract');
-const SalaryStructure = require('../models/SalaryStructure');
-const Payslip = require('../models/Payslip');
+const {
+  Payrun,
+  Employee,
+  Contract,
+  SalaryStructure,
+  SalaryRule,
+  Payslip,
+  Department,
+  JobPosition,
+  WorkingSchedule,
+  Attendance,
+  TimeOffRequest
+} = require('../models');
 const payrollService = require('./payrollService');
 const payrollValidatorService = require('./payrollValidatorService');
 const emailService = require('./emailService');

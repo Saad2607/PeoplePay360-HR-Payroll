@@ -7,7 +7,7 @@ import {
   ArrowLeft,
   Play,
   CheckCircle2,
-  DollarSign,
+  IndianRupee,
   Send,
   AlertTriangle,
   FileText,
@@ -21,7 +21,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
-  const { isPayrollUser } = useAuth();
+  const { isPayrollUser, canExecutePayroll, canManageSalaryRules } = useAuth();
 
   const [payrun, setPayrun] = useState(null);
   const [validationReport, setValidationReport] = useState(null);
@@ -127,7 +127,13 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
     try {
       const blob = await payslipApi.downloadPdf(payslipId);
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-      window.open(url, '_blank');
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `payslip-${payslipId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err.message || 'Failed to download PDF payslip');
     }
@@ -185,7 +191,7 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
         </div>
 
         {/* Workflow Processing Buttons */}
-        {isPayrollUser && (
+        {canExecutePayroll && (
           <div className="flex flex-wrap items-center gap-2">
             {isDraft && (
               <button
@@ -199,24 +205,38 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
             )}
 
             {(isDraft || isComputed) && (
-              <button
-                onClick={handleValidate}
-                disabled={actionLoading}
-                className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition disabled:opacity-50"
-              >
-                {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-                Validate & Approve
-              </button>
+              canManageSalaryRules ? (
+                <button
+                  onClick={handleValidate}
+                  disabled={actionLoading}
+                  className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md transition disabled:opacity-50"
+                >
+                  {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
+                  Validate & Approve
+                </button>
+              ) : isComputed ? (
+                <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-semibold flex items-center">
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1 text-amber-600" />
+                  Awaiting Payroll Manager Sign-Off
+                </span>
+              ) : null
             )}
 
             {isValidated && (
-              <button
-                onClick={() => setIsPaidModalOpen(true)}
-                disabled={actionLoading}
-                className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition disabled:opacity-50"
-              >
-                <DollarSign className="w-4 h-4 mr-2" /> Mark as Paid
-              </button>
+              canManageSalaryRules ? (
+                <button
+                  onClick={() => setIsPaidModalOpen(true)}
+                  disabled={actionLoading}
+                  className="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition disabled:opacity-50"
+                >
+                  <IndianRupee className="w-4 h-4 mr-2" /> Mark as Paid
+                </button>
+              ) : (
+                <span className="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-800 border border-indigo-200 text-xs font-semibold flex items-center">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-indigo-600" />
+                  Validated & Approved
+                </span>
+              )
             )}
 
             {(isValidated || isPaid) && (
@@ -271,21 +291,21 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <span className="text-xs font-bold text-gray-400 uppercase">Total Gross Salary</span>
           <div className="text-2xl font-extrabold text-brand-600 mt-1">
-            ₹{payrun.totalGrossSalary ? payrun.totalGrossSalary.toLocaleString('en-IN') : 0}
+            ₹{(payrun.totalGross ?? payrun.totalGrossSalary ?? 0).toLocaleString('en-IN')}
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
           <span className="text-xs font-bold text-gray-400 uppercase">Total Deductions</span>
           <div className="text-2xl font-extrabold text-rose-600 mt-1">
-            -₹{payrun.totalDeductions ? payrun.totalDeductions.toLocaleString('en-IN') : 0}
+            -₹{(payrun.totalDeductions || 0).toLocaleString('en-IN')}
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
           <span className="text-xs font-bold text-emerald-800 uppercase">Total Net Salary</span>
           <div className="text-2xl font-extrabold text-emerald-700 mt-1">
-            ₹{payrun.totalNetSalary ? payrun.totalNetSalary.toLocaleString('en-IN') : 0}
+            ₹{(payrun.totalNet ?? payrun.totalNetSalary ?? 0).toLocaleString('en-IN')}
           </div>
         </div>
       </div>
@@ -329,19 +349,19 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
                     </td>
 
                     <td className="py-3 px-4 font-semibold text-gray-700">
-                      ₹{ps.basicSalary ? ps.basicSalary.toLocaleString('en-IN') : 0}
+                      ₹{(ps.basic ?? ps.basicSalary ?? 0).toLocaleString('en-IN')}
                     </td>
 
                     <td className="py-3 px-4 font-semibold text-brand-600">
-                      ₹{ps.grossSalary ? ps.grossSalary.toLocaleString('en-IN') : 0}
+                      ₹{(ps.gross ?? ps.grossSalary ?? 0).toLocaleString('en-IN')}
                     </td>
 
                     <td className="py-3 px-4 font-semibold text-rose-600">
-                      -₹{ps.totalDeductions ? ps.totalDeductions.toLocaleString('en-IN') : 0}
+                      -₹{(ps.deductions ?? ps.totalDeductions ?? 0).toLocaleString('en-IN')}
                     </td>
 
                     <td className="py-3 px-4 font-extrabold text-emerald-700">
-                      ₹{ps.netSalary ? ps.netSalary.toLocaleString('en-IN') : 0}
+                      ₹{(ps.net ?? ps.netSalary ?? 0).toLocaleString('en-IN')}
                     </td>
 
                     <td className="py-3 px-4">

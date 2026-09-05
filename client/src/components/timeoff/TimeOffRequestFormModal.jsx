@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Loader2, AlertCircle, Calendar } from 'lucide-react';
 
 export const TimeOffRequestFormModal = ({ isOpen, onClose, onSuccess }) => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
 
   const [formData, setFormData] = useState({
     employeeId: '',
@@ -33,7 +33,7 @@ export const TimeOffRequestFormModal = ({ isOpen, onClose, onSuccess }) => {
       try {
         const [typeRes, empRes] = await Promise.all([
           timeOffTypeApi.getAll(),
-          isHRManager ? employeeApi.getAll({ limit: 100 }) : Promise.resolve({ data: [] }),
+          canManageHR ? employeeApi.getAll({ limit: 100 }) : Promise.resolve({ data: [] }),
         ]);
         setTypes(typeRes.data || []);
         setEmployees(empRes.data || []);
@@ -48,7 +48,7 @@ export const TimeOffRequestFormModal = ({ isOpen, onClose, onSuccess }) => {
       }
     };
     loadData();
-  }, [isOpen, isHRManager]);
+  }, [isOpen, canManageHR]);
 
   // Auto-calculate duration roughly when start and end date change
   useEffect(() => {
@@ -83,7 +83,7 @@ export const TimeOffRequestFormModal = ({ isOpen, onClose, onSuccess }) => {
     setSubmitting(true);
     try {
       const payload = {
-        employeeId: isHRManager && formData.employeeId ? formData.employeeId : undefined,
+        employeeId: canManageHR && formData.employeeId ? formData.employeeId : undefined,
         timeOffTypeId: formData.timeOffTypeId,
         startDate: formData.startDate,
         endDate: formData.endDate,
@@ -122,7 +122,7 @@ export const TimeOffRequestFormModal = ({ isOpen, onClose, onSuccess }) => {
           )}
 
           {/* HR On-behalf employee selector */}
-          {isHRManager && (
+          {canManageHR && (
             <div>
               <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
                 Select Employee (HR Admin)

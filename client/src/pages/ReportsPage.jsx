@@ -12,6 +12,7 @@ import { allocationApi } from '../api/allocationApi';
 import { useAuth } from '../context/AuthContext';
 import {
   BarChart3,
+  IndianRupee,
   DollarSign,
   Clock,
   Calendar,
@@ -67,7 +68,7 @@ export const ReportsPage = () => {
       // Calculate real metrics from responses
       const totalPaid = payrunData
         .filter((p) => p.status === 'Paid')
-        .reduce((sum, p) => sum + (p.totalNet || p.totalGross || 0), 0);
+        .reduce((sum, p) => sum + (p.totalNet || p.totalNetPay || p.totalGross || 0), 0);
 
       const paidCount = payrunData.filter((p) => p.status === 'Paid').length;
       const onTimeAtt = attData.filter((a) => a.status === 'Present').length;
@@ -96,22 +97,26 @@ export const ReportsPage = () => {
     {
       key: 'title',
       label: 'Payrun Title',
-      render: (row) => (
-        <div>
-          <div className="font-semibold text-gray-900">{row.title || row.payrunNumber || 'Payrun'}</div>
-          <div className="text-xs text-gray-400 font-mono">
-            {row.periodStart ? new Date(row.periodStart).toLocaleDateString() : '—'} to{' '}
-            {row.periodEnd ? new Date(row.periodEnd).toLocaleDateString() : '—'}
+      render: (row) => {
+        const pStart = row.period?.startDate || row.periodStart;
+        const pEnd = row.period?.endDate || row.periodEnd;
+        return (
+          <div>
+            <div className="font-semibold text-gray-900">{row.name || row.title || row.payrunNumber || 'Payrun'}</div>
+            <div className="text-xs text-gray-400 font-mono">
+              {pStart ? new Date(pStart).toLocaleDateString() : '—'} to{' '}
+              {pEnd ? new Date(pEnd).toLocaleDateString() : '—'}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'employeeCount',
       label: 'Employees',
       render: (row) => (
         <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-700">
-          {row.payslips?.length || row.eligibleCount || 0} Staff
+          {row.payslips?.length || row.selectedEmployees?.length || row.eligibleCount || 0} Staff
         </span>
       ),
     },
@@ -129,7 +134,7 @@ export const ReportsPage = () => {
       label: 'Net Disbursed',
       render: (row) => (
         <span className="font-mono text-xs font-bold text-emerald-600">
-          ₹{(row.totalNet || 0).toLocaleString()}
+          ₹{(row.totalNet || row.totalNetPay || 0).toLocaleString()}
         </span>
       ),
     },
@@ -271,7 +276,7 @@ export const ReportsPage = () => {
         <StatCard
           title="Total Payroll Disbursed"
           value={`₹${metrics.totalDisbursed.toLocaleString()}`}
-          icon={DollarSign}
+          icon={IndianRupee}
           color="emerald"
           loading={loading}
           description="Total funds settled across confirmed payruns"
@@ -315,7 +320,7 @@ export const ReportsPage = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <DollarSign className="w-3.5 h-3.5 mr-1" />
+              <IndianRupee className="w-3.5 h-3.5 mr-1" />
               Payroll Summary
             </button>
 

@@ -6,13 +6,15 @@ import {
   LayoutDashboard,
   Calendar,
   Clock,
-  DollarSign,
+  IndianRupee,
   BarChart3,
   Layers,
   Sliders,
   UserCheck,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Shield,
+  Briefcase
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBadge } from './StatusBadge';
@@ -33,26 +35,32 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
 
   const userRole = user?.role || 'Employee';
 
-  // Navigation definitions based on specification
+  // Navigation definitions based on specification and segregation of duties
   const getNavSections = (role) => {
     switch (role) {
       case 'Admin':
         return [
           {
-            title: 'Core Management',
+            title: 'Administration',
             items: [
-              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Admin Console', path: '/', icon: LayoutDashboard },
+              { label: 'User & Role Manager', path: '/admin/users', icon: Shield, badge: 'Admin' },
+            ],
+          },
+          {
+            title: 'HR Operations',
+            items: [
               { label: 'Employees', path: '/employees', icon: Users },
               { label: 'Contracts', path: '/contracts', icon: FileText },
               { label: 'Attendance', path: '/attendance', icon: Clock },
-              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+              { label: 'Time Off & Leaves', path: '/timeoff', icon: Calendar },
             ],
           },
           {
             title: 'Payroll & Analytics',
             items: [
-              { label: 'Payroll', path: '/payroll', icon: DollarSign },
-              { label: 'Reports', path: '/reports', icon: BarChart3 },
+              { label: 'Payroll Engine', path: '/payroll', icon: IndianRupee },
+              { label: 'Executive Reports', path: '/reports', icon: BarChart3 },
             ],
           },
         ];
@@ -62,11 +70,18 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
           {
             title: 'People & Operations',
             items: [
-              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-              { label: 'Employees', path: '/employees', icon: Users },
-              { label: 'Contracts', path: '/contracts', icon: FileText },
-              { label: 'Attendance', path: '/attendance', icon: Clock },
-              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+              { label: 'HR Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Employees Directory', path: '/employees', icon: Users },
+              { label: 'Contracts Management', path: '/contracts', icon: FileText },
+              { label: 'Attendance Monitoring', path: '/attendance', icon: Clock },
+              { label: 'Time Off & Approvals', path: '/timeoff', icon: Calendar },
+            ],
+          },
+          {
+            title: 'Compensation & Analytics',
+            items: [
+              { label: 'Payroll & Payslips', path: '/payroll', icon: IndianRupee },
+              { label: 'HR Reports', path: '/reports', icon: BarChart3 },
             ],
           },
         ];
@@ -76,10 +91,18 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
           {
             title: 'Payroll Operations',
             items: [
-              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-              { label: 'Payroll', path: '/payroll', icon: DollarSign },
-              { label: 'Payslips', path: '/payroll?tab=payslips', icon: FileText },
-              { label: 'Reports', path: '/reports', icon: BarChart3 },
+              { label: 'Payroll Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Payruns & Workflows', path: '/payroll', icon: IndianRupee },
+              { label: 'Payslips Audit', path: '/payroll?tab=payslips', icon: FileText },
+              { label: 'Payroll Reports', path: '/reports', icon: BarChart3 },
+            ],
+          },
+          {
+            title: 'Workforce Reference',
+            items: [
+              { label: 'Employee Reference', path: '/employees', icon: Users, badge: 'Read-Only' },
+              { label: 'Contract Wages', path: '/contracts', icon: FileText, badge: 'Read-Only' },
+              { label: 'Attendance Records', path: '/attendance', icon: Clock, badge: 'Read-Only' },
             ],
           },
         ];
@@ -89,10 +112,18 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
           {
             title: 'Compensation & Rules',
             items: [
-              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Manager Dashboard', path: '/', icon: LayoutDashboard },
               { label: 'Salary Structures', path: '/payroll?tab=structures', icon: Layers },
               { label: 'Salary Rules', path: '/payroll?tab=structures', icon: Sliders },
-              { label: 'Payroll', path: '/payroll', icon: DollarSign },
+              { label: 'Payruns & Approvals', path: '/payroll', icon: IndianRupee },
+              { label: 'Financial Reports', path: '/reports', icon: BarChart3 },
+            ],
+          },
+          {
+            title: 'Workforce Reference',
+            items: [
+              { label: 'Employee Directory', path: '/employees', icon: Users, badge: 'Reference' },
+              { label: 'Contract Wages', path: '/contracts', icon: FileText, badge: 'Reference' },
             ],
           },
         ];
@@ -103,10 +134,10 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
           {
             title: 'Self-Service Portal',
             items: [
-              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-              { label: 'Own Employee Details', path: '/employees', icon: UserCheck },
-              { label: 'Attendance', path: '/attendance', icon: Clock },
-              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+              { label: 'My Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Punch & Attendance', path: '/attendance', icon: Clock },
+              { label: 'Leaves & Time Off', path: '/timeoff', icon: Calendar },
+              { label: 'My Payslips', path: '/payroll', icon: IndianRupee },
             ],
           },
         ];
@@ -170,9 +201,16 @@ export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
                       <span className="truncate">{item.label}</span>
                     </div>
 
-                    {active && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-600 flex-shrink-0" />
-                    )}
+                    <div className="flex items-center space-x-1.5 flex-shrink-0">
+                      {item.badge && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono font-normal">
+                          {item.badge}
+                        </span>
+                      )}
+                      {active && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-600 flex-shrink-0" />
+                      )}
+                    </div>
                   </Link>
                 );
               })}

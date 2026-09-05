@@ -11,7 +11,7 @@ import {
   Sparkles,
   ExternalLink,
   Clock,
-  DollarSign,
+  IndianRupee,
   BarChart3
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
@@ -148,18 +148,18 @@ export const Navbar = ({
                     </Link>
                   )}
 
-                  {(user?.role === 'Admin' || user?.role === 'HR Payroll User' || user?.role === 'HR Payroll Manager') && (
+                  {(user?.role === 'Admin' || user?.role === 'HR Manager' || user?.role === 'HR Payroll User' || user?.role === 'HR Payroll Manager') && (
                     <Link
                       to="/payroll"
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
                     >
-                      <DollarSign className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
-                      Payroll Engine
+                      <IndianRupee className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
+                      Payroll & Payslips
                     </Link>
                   )}
 
-                  {(user?.role === 'Admin' || user?.role === 'HR Payroll User') && (
+                  {(user?.role === 'Admin' || user?.role === 'HR Manager' || user?.role === 'HR Payroll User' || user?.role === 'HR Payroll Manager') && (
                     <Link
                       to="/reports"
                       onClick={() => setIsProfileOpen(false)}

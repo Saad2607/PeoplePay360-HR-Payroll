@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Users, DollarSign, Layers } from 'lucide-react';
+import { Building2, Users, Layers } from 'lucide-react';
 import { DataTable } from '../common/DataTable';
 
 /**

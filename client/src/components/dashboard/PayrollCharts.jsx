@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart3, TrendingUp, DollarSign, Building2, Layers } from 'lucide-react';
+import { BarChart3, TrendingUp, Building2, Layers } from 'lucide-react';
 
 /**
  * PayrollCharts - Responsive interactive enterprise charts powered by real backend payroll data

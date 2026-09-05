@@ -4,7 +4,7 @@ import { Clock, AlertTriangle, Edit3, User, Calendar, CheckCircle2 } from 'lucid
 import { useAuth } from '../../context/AuthContext';
 
 export const AttendanceList = ({ attendanceRecords, onManualCorrection }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -87,7 +87,7 @@ export const AttendanceList = ({ attendanceRecords, onManualCorrection }) => {
                   </td>
 
                   <td className="py-3.5 px-4 text-right">
-                    {isHRManager && (
+                    {canManageHR && (
                       <button
                         onClick={() => onManualCorrection(rec)}
                         title="Manual Correction (HR Audit)"

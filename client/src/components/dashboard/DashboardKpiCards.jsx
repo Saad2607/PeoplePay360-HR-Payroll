@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, FileText, TrendingUp, Calendar, Activity } from 'lucide-react';
+import { IndianRupee, FileText, TrendingUp, Calendar, Activity } from 'lucide-react';
 import { StatCard } from '../common/StatCard';
 
 /**
@@ -24,13 +24,13 @@ export const DashboardKpiCards = ({ kpis = {}, loading = false }) => {
       {/* 1. Total Net Salary Paid */}
       <StatCard
         title="Total Net Salary Paid"
-        value={`?${Number(totalNetPaid).toLocaleString('en-IN')}`}
-        icon={DollarSign}
+        value={`₹${Number(totalNetPaid).toLocaleString('en-IN')}`}
+        icon={IndianRupee}
         color="emerald"
         loading={loading}
         description={
           totalGrossPaid > totalNetPaid
-            ? `Gross: ?${Number(totalGrossPaid).toLocaleString('en-IN')}`
+            ? `Gross: ₹${Number(totalGrossPaid).toLocaleString('en-IN')}`
             : 'Total settled disbursements'
         }
         link="/payroll"
@@ -52,7 +52,7 @@ export const DashboardKpiCards = ({ kpis = {}, loading = false }) => {
       {/* 3. Average Salary */}
       <StatCard
         title="Average Salary"
-        value={`?${Number(averageSalary).toLocaleString('en-IN')}`}
+        value={`₹${Number(averageSalary).toLocaleString('en-IN')}`}
         icon={TrendingUp}
         color="indigo"
         loading={loading}

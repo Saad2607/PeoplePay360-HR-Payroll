@@ -10,6 +10,7 @@ import { AttendancePage } from './pages/AttendancePage';
 import { TimeOffPage } from './pages/TimeOffPage';
 import { PayrollPage } from './pages/PayrollPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { AdminUsersPage } from './pages/AdminUsersPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
@@ -27,6 +28,22 @@ const ProtectedLayout = ({ children }) => {
   return <AppLayout>{children}</AppLayout>;
 };
 
+const AdminRoute = ({ children }) => {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen label="Checking admin authorization..." />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
+};
+
+const RoleRoute = ({ children, allowedRoles }) => {
+  const { role, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen label="Checking role permissions..." />;
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
 export default function App() {
   return (
     <AuthProvider>
@@ -42,10 +59,22 @@ export default function App() {
             }
           />
           <Route
+            path="/admin/users"
+            element={
+              <ProtectedLayout>
+                <AdminRoute>
+                  <AdminUsersPage />
+                </AdminRoute>
+              </ProtectedLayout>
+            }
+          />
+          <Route
             path="/employees"
             element={
               <ProtectedLayout>
-                <EmployeesPage />
+                <RoleRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                  <EmployeesPage />
+                </RoleRoute>
               </ProtectedLayout>
             }
           />
@@ -53,7 +82,9 @@ export default function App() {
             path="/contracts"
             element={
               <ProtectedLayout>
-                <ContractsPage />
+                <RoleRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                  <ContractsPage />
+                </RoleRoute>
               </ProtectedLayout>
             }
           />

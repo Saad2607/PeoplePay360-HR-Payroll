@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
 import { Badge } from '../common/Badge';
 import { contractApi } from '../../api/contractApi';
-import { FileText, Calendar, DollarSign, Building2, Briefcase, Clock, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileText, Calendar, IndianRupee, Building2, Briefcase, Clock, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export const ContractDetailsModal = ({ isOpen, onClose, contract }) => {
   if (!contract) return null;
@@ -116,7 +116,7 @@ export const ContractDetailsModal = ({ isOpen, onClose, contract }) => {
           {/* Salary Components */}
           <div className="p-4 bg-white rounded-xl border border-gray-200 space-y-3">
             <h4 className="font-semibold text-gray-900 border-b pb-2 flex items-center">
-              <DollarSign className="w-4 h-4 mr-2 text-emerald-600" /> Salary Breakdown
+              <IndianRupee className="w-4 h-4 mr-2 text-emerald-600" /> Salary Breakdown
             </h4>
 
             <div className="space-y-2 text-xs">

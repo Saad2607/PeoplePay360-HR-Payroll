@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { Plus, FileText, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const ContractsPage = () => {
-  const { isHRManager, isAdmin } = useAuth();
+  const { canManageHR, isAdmin } = useAuth();
 
   const [contracts, setContracts] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -125,7 +125,7 @@ export const ContractsPage = () => {
           { label: 'Contracts' },
         ]}
         actions={
-          isHRManager && (
+          canManageHR && (
             <button
               onClick={handleCreateNew}
               className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
@@ -223,7 +223,7 @@ export const ContractsPage = () => {
         <EmptyState
           title="No contracts found"
           description="There are no employment contracts matching your criteria."
-          actionLabel={isHRManager ? 'Create New Contract' : null}
+          actionLabel={canManageHR ? 'Create New Contract' : null}
           onAction={handleCreateNew}
           icon={FileText}
         />

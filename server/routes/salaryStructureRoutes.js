@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const salaryStructureController = require('../controllers/salaryStructureController');
 const { authenticate, authorize } = require('../middleware/auth');
+const { PAYROLL_MANAGERS, PAYROLL_USERS } = require('../config/roles');
 const validate = require('../middleware/validate');
 const {
   createSalaryStructureValidator,
@@ -11,13 +12,14 @@ const {
 // All salary structure routes require authentication
 router.use(authenticate);
 
-router.get('/', salaryStructureController.getSalaryStructures);
-router.get('/:id', salaryStructureController.getSalaryStructureById);
+// Read-only access for all payroll personnel
+router.get('/', authorize(...PAYROLL_USERS), salaryStructureController.getSalaryStructures);
+router.get('/:id', authorize(...PAYROLL_USERS), salaryStructureController.getSalaryStructureById);
 
-// Admin & HR management
+// Salary structure template configuration strictly restricted to HR Payroll Managers & Admins
 router.post(
   '/',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   createSalaryStructureValidator,
   validate,
   salaryStructureController.createSalaryStructure
@@ -25,7 +27,7 @@ router.post(
 
 router.put(
   '/:id',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   updateSalaryStructureValidator,
   validate,
   salaryStructureController.updateSalaryStructure
@@ -33,7 +35,7 @@ router.put(
 
 router.delete(
   '/:id',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   salaryStructureController.deleteSalaryStructure
 );
 

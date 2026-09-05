@@ -4,7 +4,7 @@ import { CheckCircle2, XCircle, Clock, Calendar, MessageSquare, AlertCircle } fr
 import { useAuth } from '../../context/AuthContext';
 
 export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -72,7 +72,7 @@ export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) 
                   </td>
 
                   <td className="py-3.5 px-4 text-right space-x-1">
-                    {isPending && isHRManager && (
+                    {isPending && canManageHR && (
                       <>
                         <button
                           onClick={() => onApprove(req)}
@@ -91,7 +91,7 @@ export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) 
                       </>
                     )}
 
-                    {isPending && isOwnRequest && !isHRManager && (
+                    {isPending && isOwnRequest && !canManageHR && (
                       <button
                         onClick={() => onCancel(req)}
                         title="Cancel Request"

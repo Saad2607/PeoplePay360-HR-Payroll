@@ -10,13 +10,13 @@ const {
 } = require('../validators/payrollValidator');
 const { HR_MANAGERS, PAYROLL_USERS } = require('../config/roles');
 
-// All payrun routes require authentication and HR/Payroll authorization
+// All payrun routes require authentication and Payroll authorization
 router.use(authenticate);
 
 // Wizard Step 2: Query eligible employees
 router.post(
   '/wizard/eligible-employees',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   wizardEligibleEmployeesValidator,
   validate,
   payrunController.getEligibleEmployees
@@ -25,46 +25,46 @@ router.post(
 // Wizard Step 3: Create Payrun
 router.post(
   '/',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   createPayrunValidator,
   validate,
   payrunController.createPayrun
 );
 
-// List & Retrieve Payruns
+// List & Retrieve Payruns (HR Managers can audit; Payroll Users can manage)
 router.get(
   '/',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...HR_MANAGERS),
   payrunController.getPayruns
 );
 
 router.get(
   '/:id',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...HR_MANAGERS),
   payrunController.getPayrunById
 );
 
 router.post(
   '/:id/compute',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   payrunController.computePayrun
 );
 
 router.post(
   '/:id/validate',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   payrunController.validatePayrun
 );
 
 router.get(
   '/:id/validate',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   payrunController.checkValidation
 );
 
 router.post(
   '/:id/mark-paid',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   markPaidValidator,
   validate,
   payrunController.markPaid
@@ -72,13 +72,13 @@ router.post(
 
 router.post(
   '/:id/send-payslips',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   payrunController.sendPayslips
 );
 
 router.delete(
   '/:id',
-  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  authorize(...PAYROLL_USERS),
   payrunController.deletePayrun
 );
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { Badge } from '../common/Badge';
-import { Edit2, Trash2, Layers, CheckCircle2, DollarSign } from 'lucide-react';
+import { Edit2, Trash2, Layers, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStructure }) => {
-  const { isHRManager } = useAuth();
+  const { canManageSalaryRules, isPayrollUser } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -51,21 +51,27 @@ export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStruc
                 </td>
 
                 <td className="py-3.5 px-4 text-right space-x-1">
-                  {isHRManager && (
+                  {canManageSalaryRules ? (
                     <>
                       <button
                         onClick={() => onEditStructure(s)}
+                        title="Edit Structure & Rules"
                         className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteStructure(s)}
+                        title="Delete Structure"
                         className="p-1.5 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </>
+                  ) : (
+                    <span className="text-[11px] font-mono text-gray-400 italic px-2 py-1 bg-gray-50 rounded-lg">
+                      Read-Only
+                    </span>
                   )}
                 </td>
               </tr>

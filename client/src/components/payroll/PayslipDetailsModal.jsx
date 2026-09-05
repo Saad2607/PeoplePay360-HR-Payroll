@@ -33,7 +33,13 @@ export const PayslipDetailsModal = ({ isOpen, onClose, payslipId }) => {
     try {
       const blob = await payslipApi.downloadPdf(payslipId);
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-      window.open(url, '_blank');
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `payslip-${payslip?.payslipNumber || payslipId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err.message || 'Failed to download PDF payslip');
     }
@@ -122,38 +128,58 @@ export const PayslipDetailsModal = ({ isOpen, onClose, payslipId }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {/* Basic Salary */}
-                <tr className="font-semibold bg-gray-50/50">
-                  <td className="py-2.5 px-3 text-gray-900">Basic Salary</td>
-                  <td className="py-2.5 px-3 uppercase text-[10px] text-gray-500 font-mono">BASIC</td>
-                  <td className="py-2.5 px-3 text-right font-mono text-gray-900">
-                    ₹{payslip.basicSalary ? payslip.basicSalary.toLocaleString('en-IN') : 0}
-                  </td>
-                </tr>
-
-                {/* Allowances */}
-                {payslip.allowances && Object.entries(payslip.allowances).map(([k, v]) => {
-                  if (!v) return null;
-                  return (
-                    <tr key={k}>
-                      <td className="py-2 px-3 capitalize text-gray-800">{k.replace(/([A-Z])/g, ' $1')}</td>
-                      <td className="py-2 px-3 text-emerald-700 font-semibold text-[10px]">ALLOWANCE</td>
-                      <td className="py-2 px-3 text-right font-mono text-emerald-700">+₹{Number(v).toLocaleString('en-IN')}</td>
+                {payslip.salaryBreakdown && payslip.salaryBreakdown.length > 0 ? (
+                  payslip.salaryBreakdown.map((item, idx) => (
+                    <tr key={item.ruleId || idx} className="hover:bg-gray-50/50">
+                      <td className="py-2.5 px-3 font-medium text-gray-900">
+                        <span>{item.name}</span>
+                        {item.code && <span className="ml-1.5 font-mono text-[10px] text-gray-400">({item.code})</span>}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase font-mono ${
+                          item.category === 'Basic' ? 'bg-blue-50 text-blue-700' :
+                          item.category === 'Allowances' ? 'bg-emerald-50 text-emerald-700' :
+                          item.category === 'Deductions' ? 'bg-rose-50 text-rose-700' :
+                          item.category === 'Gross' ? 'bg-purple-50 text-purple-700' :
+                          'bg-indigo-50 text-indigo-700'
+                        }`}>
+                          {item.category}
+                        </span>
+                      </td>
+                      <td className={`py-2.5 px-3 text-right font-mono font-semibold ${
+                        item.category === 'Deductions' ? 'text-rose-600' :
+                        item.category === 'Net' ? 'text-emerald-700 font-bold' :
+                        'text-gray-900'
+                      }`}>
+                        {item.category === 'Deductions' ? '-' : ''}₹{Number(item.amount || 0).toLocaleString('en-IN')}
+                      </td>
                     </tr>
-                  );
-                })}
-
-                {/* Deductions */}
-                {payslip.deductions && Object.entries(payslip.deductions).map(([k, v]) => {
-                  if (!v) return null;
-                  return (
-                    <tr key={k}>
-                      <td className="py-2 px-3 capitalize text-gray-800">{k.replace(/([A-Z])/g, ' $1')}</td>
-                      <td className="py-2 px-3 text-rose-700 font-semibold text-[10px]">DEDUCTION</td>
-                      <td className="py-2 px-3 text-right font-mono text-rose-600">-₹{Number(v).toLocaleString('en-IN')}</td>
+                  ))
+                ) : (
+                  <>
+                    <tr className="font-semibold bg-gray-50/50">
+                      <td className="py-2.5 px-3 text-gray-900">Basic Salary</td>
+                      <td className="py-2.5 px-3 uppercase text-[10px] text-gray-500 font-mono">BASIC</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-gray-900">
+                        ₹{(payslip.basic ?? payslip.basicSalary ?? 0).toLocaleString('en-IN')}
+                      </td>
                     </tr>
-                  );
-                })}
+                    <tr className="bg-white">
+                      <td className="py-2.5 px-3 text-gray-900">Allowances</td>
+                      <td className="py-2.5 px-3 uppercase text-[10px] text-emerald-600 font-mono">ALLOWANCES</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-emerald-600">
+                        +₹{(payslip.allowances || 0).toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                    <tr className="bg-white">
+                      <td className="py-2.5 px-3 text-gray-900">Deductions</td>
+                      <td className="py-2.5 px-3 uppercase text-[10px] text-rose-600 font-mono">DEDUCTIONS</td>
+                      <td className="py-2.5 px-3 text-right font-mono text-rose-600">
+                        -₹{(payslip.deductions || 0).toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  </>
+                )}
               </tbody>
             </table>
           </div>
@@ -163,14 +189,14 @@ export const PayslipDetailsModal = ({ isOpen, onClose, payslipId }) => {
             <div>
               <span className="text-xs text-emerald-800 font-semibold uppercase block">Gross Salary</span>
               <span className="text-base font-bold text-emerald-900">
-                ₹{payslip.grossSalary ? payslip.grossSalary.toLocaleString('en-IN') : 0}
+                ₹{(payslip.gross ?? payslip.grossSalary ?? 0).toLocaleString('en-IN')}
               </span>
             </div>
 
             <div className="text-right">
               <span className="text-xs text-emerald-800 font-semibold uppercase block">Net Salary Payable</span>
               <span className="text-2xl font-extrabold text-emerald-700">
-                ₹{payslip.netSalary ? payslip.netSalary.toLocaleString('en-IN') : 0}
+                ₹{(payslip.net ?? payslip.netSalary ?? 0).toLocaleString('en-IN')}
               </span>
             </div>
           </div>

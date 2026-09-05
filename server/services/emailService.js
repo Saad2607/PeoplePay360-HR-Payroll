@@ -65,15 +65,15 @@ const sendPayslipEmail = async ({ payslip, pdfBuffer }) => {
           </tr>
           <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 10px 0; color: #6b7280;">Gross Salary:</td>
-            <td style="padding: 10px 0; text-align: right; font-weight: bold;">$${Number(payslip.gross || 0).toFixed(2)}</td>
+            <td style="padding: 10px 0; text-align: right; font-weight: bold;">₹${Number(payslip.gross || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>
           <tr style="border-bottom: 1px solid #e5e7eb;">
             <td style="padding: 10px 0; color: #6b7280;">Total Deductions:</td>
-            <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #dc2626;">-$${Number(payslip.deductions || 0).toFixed(2)}</td>
+            <td style="padding: 10px 0; text-align: right; font-weight: bold; color: #dc2626;">-₹${Number(payslip.deductions || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>
           <tr style="background-color: #f3f4f6;">
             <td style="padding: 12px 10px; font-weight: bold; font-size: 16px; color: #1e3a8a;">NET TAKE-HOME:</td>
-            <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #1e3a8a;">$${Number(payslip.net || 0).toFixed(2)}</td>
+            <td style="padding: 12px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #1e3a8a;">₹${Number(payslip.net || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
           </tr>
         </table>
 

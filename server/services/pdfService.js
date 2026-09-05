@@ -5,7 +5,7 @@ const PDFDocument = require('pdfkit');
  */
 const formatCurrency = (amount) => {
   const num = Number(amount) || 0;
-  return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return 'Rs. ' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 /**

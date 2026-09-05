@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const salaryRuleController = require('../controllers/salaryRuleController');
 const { authenticate, authorize } = require('../middleware/auth');
+const { PAYROLL_MANAGERS, PAYROLL_USERS } = require('../config/roles');
 const validate = require('../middleware/validate');
 const {
   createSalaryRuleValidator,
@@ -11,13 +12,14 @@ const {
 // All salary rule routes require authentication
 router.use(authenticate);
 
-router.get('/', salaryRuleController.getSalaryRules);
-router.get('/:id', salaryRuleController.getSalaryRuleById);
+// Read-only access for all payroll personnel
+router.get('/', authorize(...PAYROLL_USERS), salaryRuleController.getSalaryRules);
+router.get('/:id', authorize(...PAYROLL_USERS), salaryRuleController.getSalaryRuleById);
 
-// Admin & HR management
+// Salary rule configuration strictly restricted to HR Payroll Managers & Admins
 router.post(
   '/',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   createSalaryRuleValidator,
   validate,
   salaryRuleController.createSalaryRule
@@ -25,7 +27,7 @@ router.post(
 
 router.put(
   '/:id',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   updateSalaryRuleValidator,
   validate,
   salaryRuleController.updateSalaryRule
@@ -33,7 +35,7 @@ router.put(
 
 router.delete(
   '/:id',
-  authorize('Admin', 'HR'),
+  authorize(...PAYROLL_MANAGERS),
   salaryRuleController.deleteSalaryRule
 );
 

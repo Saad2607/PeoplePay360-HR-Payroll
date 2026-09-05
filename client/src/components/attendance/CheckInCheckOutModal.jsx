@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Loader2, LogIn, LogOut, AlertCircle } from 'lucide-react';
 
 export const CheckInCheckOutModal = ({ isOpen, onClose, mode = 'checkIn', onSuccess }) => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
   const isCheckIn = mode === 'checkIn';
 
   const [employeeId, setEmployeeId] = useState('');
@@ -26,14 +26,14 @@ export const CheckInCheckOutModal = ({ isOpen, onClose, mode = 'checkIn', onSucc
     setNotes('');
     setError('');
 
-    if (isHRManager) {
+    if (canManageHR) {
       setLoadingEmployees(true);
       employeeApi.getAll({ limit: 100 })
         .then((res) => setEmployees(res.data || []))
         .catch(() => setEmployees([]))
         .finally(() => setLoadingEmployees(false));
     }
-  }, [isOpen, isHRManager]);
+  }, [isOpen, canManageHR]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +42,7 @@ export const CheckInCheckOutModal = ({ isOpen, onClose, mode = 'checkIn', onSucc
 
     try {
       const payload = {
-        employeeId: isHRManager && employeeId ? employeeId : undefined,
+        employeeId: canManageHR && employeeId ? employeeId : undefined,
         [isCheckIn ? 'checkIn' : 'checkOut']: new Date(timestamp).toISOString(),
         notes: notes.trim() || undefined,
       };
@@ -78,7 +78,7 @@ export const CheckInCheckOutModal = ({ isOpen, onClose, mode = 'checkIn', onSucc
         )}
 
         {/* HR On-behalf employee selector */}
-        {isHRManager && (
+        {canManageHR && (
           <div>
             <label className="block text-xs font-semibold text-gray-700 uppercase mb-1">
               Select Employee (HR Admin)

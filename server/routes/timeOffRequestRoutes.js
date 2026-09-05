@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const timeOffRequestController = require('../controllers/timeOffRequestController');
 const { authenticate, authorize } = require('../middleware/auth');
+const { HR_MANAGERS } = require('../config/roles');
 const validate = require('../middleware/validate');
 const {
   createTimeOffRequestValidator,
@@ -25,12 +26,12 @@ router.get('/employee/:employeeId', timeOffRequestController.getEmployeeRequests
 router.get('/:id', timeOffRequestController.getRequestById);
 
 // Approve request (Restricted to HR and Admin)
-router.put('/:id/approve', authorize('Admin', 'HR'), timeOffRequestController.approveRequest);
+router.put('/:id/approve', authorize(...HR_MANAGERS), timeOffRequestController.approveRequest);
 
 // Refuse request (Restricted to HR and Admin)
 router.put(
   '/:id/refuse',
-  authorize('Admin', 'HR'),
+  authorize(...HR_MANAGERS),
   refuseTimeOffRequestValidator,
   validate,
   timeOffRequestController.refuseRequest

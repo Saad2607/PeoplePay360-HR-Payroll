@@ -4,7 +4,7 @@ import { Eye, Edit2, Trash2, Mail, Phone, Calendar, UserCheck } from 'lucide-rea
 import { useAuth } from '../../context/AuthContext';
 
 export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDeleteEmployee }) => {
-  const { isHRManager, isAdmin } = useAuth();
+  const { canManageHR, isAdmin } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -80,7 +80,7 @@ export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDe
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    {isHRManager && (
+                    {canManageHR && (
                       <button
                         onClick={() => onEditEmployee(emp)}
                         title="Edit Employee"

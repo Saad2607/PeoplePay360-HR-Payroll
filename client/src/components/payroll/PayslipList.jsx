@@ -1,14 +1,20 @@
 import React from 'react';
 import { Badge } from '../common/Badge';
-import { Eye, Download, FileText, Calendar, DollarSign } from 'lucide-react';
+import { Eye, Download, FileText, Calendar } from 'lucide-react';
 import { payslipApi } from '../../api/payslipApi';
 
 export const PayslipList = ({ payslips, onViewDetails, onError }) => {
-  const handleDownloadPdf = async (id) => {
+  const handleDownloadPdf = async (id, slipNum) => {
     try {
       const blob = await payslipApi.downloadPdf(id);
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-      window.open(url, '_blank');
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `payslip-${slipNum || id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (err) {
       if (onError) {
         onError(err.message || 'Failed to download PDF payslip');
@@ -63,19 +69,19 @@ export const PayslipList = ({ payslips, onViewDetails, onError }) => {
                   </td>
 
                   <td className="py-3.5 px-4 font-semibold text-gray-700">
-                    ₹{ps.basicSalary ? ps.basicSalary.toLocaleString('en-IN') : 0}
+                    ₹{(ps.basic ?? ps.basicSalary ?? 0).toLocaleString('en-IN')}
                   </td>
 
                   <td className="py-3.5 px-4 font-semibold text-brand-600">
-                    ₹{ps.grossSalary ? ps.grossSalary.toLocaleString('en-IN') : 0}
+                    ₹{(ps.gross ?? ps.grossSalary ?? 0).toLocaleString('en-IN')}
                   </td>
 
                   <td className="py-3.5 px-4 font-semibold text-rose-600">
-                    -₹{ps.totalDeductions ? ps.totalDeductions.toLocaleString('en-IN') : 0}
+                    -₹{(ps.deductions ?? ps.totalDeductions ?? 0).toLocaleString('en-IN')}
                   </td>
 
                   <td className="py-3.5 px-4 font-extrabold text-emerald-700">
-                    ₹{ps.netSalary ? ps.netSalary.toLocaleString('en-IN') : 0}
+                    ₹{(ps.net ?? ps.netSalary ?? 0).toLocaleString('en-IN')}
                   </td>
 
                   <td className="py-3.5 px-4">
@@ -92,7 +98,7 @@ export const PayslipList = ({ payslips, onViewDetails, onError }) => {
                     </button>
 
                     <button
-                      onClick={() => handleDownloadPdf(ps._id)}
+                      onClick={() => handleDownloadPdf(ps._id, ps.payslipNumber)}
                       title="Download Vector PDF"
                       className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                     >

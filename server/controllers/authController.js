@@ -66,9 +66,71 @@ const logout = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   GET /api/auth/users
+ * @desc    Get all users with filtering and pagination (Admin only)
+ * @access  Private (Admin)
+ */
+const getAllUsers = async (req, res, next) => {
+  try {
+    const result = await authService.getAllUsers(req.query);
+    return res.status(200).json({
+      success: true,
+      message: 'Users retrieved successfully',
+      data: result.users,
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   PATCH /api/auth/users/:id/role
+ * @desc    Update a user's role (Admin only)
+ * @access  Private (Admin)
+ */
+const updateUserRole = async (req, res, next) => {
+  try {
+    const { role } = req.body;
+    const user = await authService.updateUserRole(req.params.id, role);
+    return successResponse(res, user, `User role updated to ${role} successfully`, 200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   PATCH /api/auth/users/:id/status
+ * @desc    Toggle a user's active/deactivated status (Admin only)
+ * @access  Private (Admin)
+ */
+const toggleUserStatus = async (req, res, next) => {
+  try {
+    const { isActive } = req.body;
+    const user = await authService.toggleUserStatus(req.params.id, isActive);
+    return successResponse(
+      res,
+      user,
+      `User account ${user.isActive ? 'activated' : 'deactivated'} successfully`,
+      200
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
-  logout
+  logout,
+  getAllUsers,
+  updateUserRole,
+  toggleUserStatus
 };

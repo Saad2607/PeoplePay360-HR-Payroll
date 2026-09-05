@@ -4,7 +4,7 @@ import { Edit2, Trash2, CheckCircle2, XCircle, ShieldCheck, DollarSign } from 'l
 import { useAuth } from '../../context/AuthContext';
 
 export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -73,7 +73,7 @@ export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
                 </td>
 
                 <td className="py-3.5 px-4 text-right space-x-1">
-                  {isHRManager && (
+                  {canManageHR && (
                     <>
                       <button
                         onClick={() => onEditType(type)}

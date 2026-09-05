@@ -15,7 +15,6 @@ import {
   Briefcase,
   Clock,
   FileText,
-  DollarSign,
   ArrowLeft,
   Edit2,
   AlertCircle,
@@ -25,7 +24,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 
 export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractForEmployee }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,7 +111,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         </div>
 
         <div className="flex items-center space-x-3">
-          {isHRManager && (
+          {canManageHR && (
             <>
               <button
                 onClick={() => onCreateContractForEmployee(employee)}
@@ -355,7 +354,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                 <ShieldAlert className="w-8 h-8 text-amber-500 mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-700">No Active Contract</p>
                 <p className="text-xs text-gray-500 mt-1">This employee does not currently have an active contract.</p>
-                {isHRManager && (
+                {canManageHR && (
                   <button
                     onClick={() => onCreateContractForEmployee(employee)}
                     className="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition"
@@ -374,7 +373,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-gray-900">Contract History ({contracts.length})</h3>
-            {isHRManager && (
+            {canManageHR && (
               <button
                 onClick={() => onCreateContractForEmployee(employee)}
                 className="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition"

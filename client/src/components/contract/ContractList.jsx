@@ -1,10 +1,10 @@
 import React from 'react';
 import { Badge } from '../common/Badge';
-import { Eye, Edit2, Trash2, Calendar, FileText, CheckCircle2, DollarSign } from 'lucide-react';
+import { Eye, Edit2, Trash2, Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const ContractList = ({ contracts, onSelectContract, onEditContract, onDeleteContract }) => {
-  const { isHRManager, isAdmin } = useAuth();
+  const { canManageHR, isAdmin } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -91,7 +91,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    {isHRManager && (
+                    {canManageHR && (
                       <button
                         onClick={() => onEditContract(ctr)}
                         title="Edit Contract"

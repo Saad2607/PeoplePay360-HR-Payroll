@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const AttendancePage = () => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
 
   const [records, setRecords] = useState([]);
   const [missingCheckouts, setMissingCheckouts] = useState([]);
@@ -81,7 +81,7 @@ export const AttendancePage = () => {
       if (res.meta) setMeta(res.meta);
 
       // Check missing checkouts for HR banner
-      if (isHRManager) {
+      if (canManageHR) {
         try {
           const missRes = await attendanceApi.getMissingCheckouts();
           setMissingCheckouts(missRes.data || []);
@@ -151,7 +151,7 @@ export const AttendancePage = () => {
       )}
 
       {/* Missing Checkouts Alert Banner */}
-      {isHRManager && missingCheckouts.length > 0 && (
+      {canManageHR && missingCheckouts.length > 0 && (
         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-amber-900">
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
@@ -218,7 +218,7 @@ export const AttendancePage = () => {
           </div>
 
           {/* Employee Filter */}
-          {isHRManager && (
+          {canManageHR && (
             <div>
               <select
                 value={empFilter}
