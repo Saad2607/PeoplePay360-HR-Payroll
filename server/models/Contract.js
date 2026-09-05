@@ -85,6 +85,11 @@ const contractSchema = new mongoose.Schema(
       ref: 'JobPosition',
       required: [true, 'Job position reference is required']
     },
+    workingSchedule: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'WorkingSchedule',
+      default: null
+    },
     status: {
       type: String,
       enum: ['Draft', 'Active', 'Expired', 'Terminated'],

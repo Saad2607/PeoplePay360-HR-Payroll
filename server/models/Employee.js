@@ -76,6 +76,14 @@ const employeeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       default: null
+    },
+    bankDetails: {
+      accountName: { type: String, trim: true, default: '' },
+      accountNumber: { type: String, trim: true, default: '' },
+      bankName: { type: String, trim: true, default: '' },
+      routingNumber: { type: String, trim: true, default: '' },
+      iban: { type: String, trim: true, default: '' },
+      swiftCode: { type: String, trim: true, default: '' }
     }
   },
   {
@@ -97,6 +105,27 @@ employeeSchema.virtual('directReports', {
   ref: 'Employee',
   localField: '_id',
   foreignField: 'manager'
+});
+
+// Virtual for attendance records
+employeeSchema.virtual('attendances', {
+  ref: 'Attendance',
+  localField: '_id',
+  foreignField: 'employee'
+});
+
+// Virtual for Time Off / Leave requests
+employeeSchema.virtual('timeOffRequests', {
+  ref: 'TimeOff',
+  localField: '_id',
+  foreignField: 'employee'
+});
+
+// Virtual for Leave / Benefit Allocations
+employeeSchema.virtual('allocations', {
+  ref: 'LeaveAllocation',
+  localField: '_id',
+  foreignField: 'employee'
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);

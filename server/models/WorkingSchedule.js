@@ -58,21 +58,31 @@ const workingScheduleSchema = new mongoose.Schema(
   }
 );
 
-// Calculate weekly working hours before save
+// Virtual for employees assigned to this schedule
+workingScheduleSchema.virtual('assignedEmployees', {
+  ref: 'Employee',
+  localField: '_id',
+  foreignField: 'workingSchedule'
+});
+
+// Virtual for contracts assigned to this schedule
+workingScheduleSchema.virtual('assignedContracts', {
+  ref: 'Contract',
+  localField: '_id',
+  foreignField: 'workingSchedule'
+});
+
+const { calculateWeeklyHours } = require('../utils/scheduleCalculator');
+
+// Calculate weekly working hours before save (strictly calculated, not manually overridden)
 workingScheduleSchema.pre('save', function (next) {
   if (this.startTime && this.endTime && this.weeklyWorkingDays) {
-    const [startH, startM] = this.startTime.split(':').map(Number);
-    const [endH, endM] = this.endTime.split(':').map(Number);
-
-    let dailyMinutes = endH * 60 + endM - (startH * 60 + startM);
-    if (dailyMinutes < 0) {
-      // Handles overnight shifts
-      dailyMinutes += 24 * 60;
-    }
-
-    const netDailyMinutes = Math.max(0, dailyMinutes - (this.breakDuration || 0));
-    const totalWeeklyMinutes = netDailyMinutes * this.weeklyWorkingDays.length;
-    this.calculatedWeeklyHours = Math.round((totalWeeklyMinutes / 60) * 10) / 10;
+    this.calculatedWeeklyHours = calculateWeeklyHours(
+      this.startTime,
+      this.endTime,
+      this.breakDuration,
+      this.weeklyWorkingDays
+    );
   }
   next();
 });

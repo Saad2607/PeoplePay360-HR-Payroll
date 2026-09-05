@@ -21,8 +21,8 @@ const registerValidator = [
     .withMessage('Password must be at least 6 characters long'),
   body('role')
     .optional()
-    .isIn(['Admin', 'HR', 'Manager', 'Employee'])
-    .withMessage('Role must be one of: Admin, HR, Manager, Employee'),
+    .isIn(['Employee', 'HR Manager', 'HR Payroll User', 'HR Payroll Manager', 'Admin'])
+    .withMessage('Role must be one of: Employee, HR Manager, HR Payroll User, HR Payroll Manager, Admin'),
   body('employee')
     .optional()
     .isMongoId()

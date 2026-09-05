@@ -9,6 +9,15 @@ const departmentRoutes = require('./departmentRoutes');
 const jobPositionRoutes = require('./jobPositionRoutes');
 const contractRoutes = require('./contractRoutes');
 const scheduleRoutes = require('./scheduleRoutes');
+const attendanceRoutes = require('./attendanceRoutes');
+const timeOffTypeRoutes = require('./timeOffTypeRoutes');
+const allocationRoutes = require('./allocationRoutes');
+const timeOffRequestRoutes = require('./timeOffRequestRoutes');
+const salaryStructureRoutes = require('./salaryStructureRoutes');
+const salaryRuleRoutes = require('./salaryRuleRoutes');
+const payrollRoutes = require('./payrollRoutes');
+const payrunRoutes = require('./payrunRoutes');
+const payslipRoutes = require('./payslipRoutes');
 
 // API Health Check
 router.get('/health', (req, res) => {
@@ -32,5 +41,14 @@ router.use('/departments', departmentRoutes);
 router.use('/job-positions', jobPositionRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/schedules', scheduleRoutes);
+router.use('/attendance', attendanceRoutes);
+router.use('/time-off-types', timeOffTypeRoutes);
+router.use('/allocations', allocationRoutes);
+router.use('/time-off-requests', timeOffRequestRoutes);
+router.use('/salary-structures', salaryStructureRoutes);
+router.use('/salary-rules', salaryRuleRoutes);
+router.use('/payroll', payrollRoutes);
+router.use('/payruns', payrunRoutes);
+router.use('/payslips', payslipRoutes);
 
 module.exports = router;

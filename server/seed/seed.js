@@ -478,27 +478,27 @@ const seedDatabase = async () => {
         isActive: true
       },
       {
-        name: 'Priya Nair (HR)',
-        email: 'hr@peoplepay360.com',
+        name: 'Priya Nair (HR Manager)',
+        email: 'hrmanager@peoplepay360.com',
         password: 'Password123!',
-        role: 'HR',
+        role: 'HR Manager',
         employee: priya._id,
         isActive: true
       },
       {
-        name: 'Rajesh Sharma (Manager)',
-        email: 'manager@peoplepay360.com',
+        name: 'Krish Verma (HR Payroll User)',
+        email: 'payrolluser@peoplepay360.com',
         password: 'Password123!',
-        role: 'Manager',
-        employee: rajesh._id,
+        role: 'HR Payroll User',
+        employee: krish._id,
         isActive: true
       },
       {
-        name: 'Krish Verma (HR / Backend)',
-        email: 'krish@peoplepay360.com',
+        name: 'Vikram Malhotra (HR Payroll Manager)',
+        email: 'payrollmanager@peoplepay360.com',
         password: 'Password123!',
-        role: 'HR',
-        employee: krish._id,
+        role: 'HR Payroll Manager',
+        employee: vikram._id,
         isActive: true
       },
       {
@@ -539,16 +539,13 @@ const seedDatabase = async () => {
     console.log('========================================================');
     console.log(' Database Seeding Finished Successfully!');
     console.log('========================================================');
-    console.log('\nDEMO CREDENTIALS:');
+    console.log('\nDEMO CREDENTIALS (Password for ALL accounts: Password123!):');
     console.log('--------------------------------------------------------');
-    console.log('Password for ALL seed users: Password123!\n');
-    console.log('• Admin:    admin@peoplepay360.com');
-    console.log('• HR Lead:  hr@peoplepay360.com');
-    console.log('• Manager:  manager@peoplepay360.com');
-    console.log('• Krish:    krish@peoplepay360.com');
-    console.log('• Jay:      jay@peoplepay360.com');
-    console.log('• Abhishek: abhishek@peoplepay360.com');
-    console.log('• Employee: employee@peoplepay360.com');
+    console.log('1. Admin:              admin@peoplepay360.com');
+    console.log('2. HR Manager:         hrmanager@peoplepay360.com');
+    console.log('3. HR Payroll User:    payrolluser@peoplepay360.com');
+    console.log('4. HR Payroll Manager: payrollmanager@peoplepay360.com');
+    console.log('5. Employee:           employee@peoplepay360.com');
     console.log('--------------------------------------------------------\n');
 
     await disconnectDB();
