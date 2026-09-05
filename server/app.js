@@ -9,24 +9,80 @@ const apiRoutes = require('./routes');
 
 const app = express();
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers (cross-origin resource policy configured for cross-origin frontend-backend deployment)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' }
+  })
+);
 
-// CORS configuration
+// Normalize configured allowed origins
+const parseAllowedOrigins = () => {
+  const defaults = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5000'
+  ];
+
+  if (config.frontendUrl) {
+    config.frontendUrl.split(',').forEach((url) => {
+      const trimmed = url.trim().replace(/\/+$/, '');
+      if (trimmed && !defaults.includes(trimmed)) {
+        defaults.push(trimmed);
+      }
+    });
+  }
+
+  return defaults;
+};
+
+const allowedOriginsList = parseAllowedOrigins();
+
+// Robust CORS configuration supporting Vercel, Render, Localhost, and custom domains
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, postman) or matching frontend URL
-    if (!origin || origin === config.frontendUrl || origin.startsWith('http://localhost:')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS policy'));
+    // Allow requests with no origin (like mobile apps, curl, postman, health checks)
+    if (!origin) {
+      return callback(null, true);
     }
+
+    const cleanOrigin = origin.trim().replace(/\/+$/, '');
+
+    // 1. Allow any local development origin
+    if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin)) {
+      return callback(null, true);
+    }
+
+    // 2. Automatically allow any Vercel deployment (*.vercel.app)
+    if (/^https:\/\/[a-zA-Z0-9._-]+\.vercel\.app$/.test(cleanOrigin)) {
+      return callback(null, true);
+    }
+
+    // 3. Automatically allow any Render domain (*.onrender.com)
+    if (/^https:\/\/[a-zA-Z0-9._-]+\.onrender\.com$/.test(cleanOrigin)) {
+      return callback(null, true);
+    }
+
+    // 4. Match against configured FRONTEND_URL list
+    if (allowedOriginsList.includes(cleanOrigin)) {
+      return callback(null, true);
+    }
+
+    console.warn(`[CORS] Blocked request from origin: ${origin}`);
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Disposition'],
+  optionsSuccessStatus: 204
 };
+
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // HTTP Request Logger
 if (config.env === 'development') {
