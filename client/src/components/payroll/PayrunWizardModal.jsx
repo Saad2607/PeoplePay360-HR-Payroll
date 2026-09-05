@@ -82,8 +82,13 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
 
       const eligibleList = res.data?.eligibleEmployees || res.data || [];
       setEligibleEmployees(eligibleList);
-      // Select all by default
-      setSelectedEmployeeIds(eligibleList.map((e) => e.employeeId || e._id));
+      // Select all by default - supports both nested item.employee and flat object
+      setSelectedEmployeeIds(
+        eligibleList.map((item) => {
+          const emp = item.employee || item;
+          return emp._id || item.employeeId || item._id;
+        })
+      );
       setStep(2);
     } catch (err) {
       setError(err.message || 'Failed to query eligible employees');
@@ -104,7 +109,12 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
   // Toggle select all
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedEmployeeIds(eligibleEmployees.map((emp) => emp.employeeId || emp._id));
+      setSelectedEmployeeIds(
+        eligibleEmployees.map((item) => {
+          const emp = item.employee || item;
+          return emp._id || item.employeeId || item._id;
+        })
+      );
     } else {
       setSelectedEmployeeIds([]);
     }
@@ -286,8 +296,13 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           <div className="max-h-[300px] overflow-y-auto border border-gray-200 rounded-xl divide-y divide-gray-100">
-            {eligibleEmployees.map((emp) => {
-              const empId = emp.employeeId || emp._id;
+            {eligibleEmployees.map((item) => {
+              const emp = item.employee || item;
+              const contract = item.contract;
+              const empId = emp._id || item.employeeId || item._id;
+              const empName = emp.name || emp.fullName || 'Employee';
+              const empCode = emp.employeeId || emp.email || '';
+              const deptName = emp.department?.name || item.departmentName || 'Active Contract';
               const isChecked = selectedEmployeeIds.includes(empId);
               return (
                 <div
@@ -305,14 +320,16 @@ export const PayrunWizardModal = ({ isOpen, onClose, onSuccess }) => {
                       className="rounded text-brand-600 focus:ring-brand-500"
                     />
                     <div>
-                      <div className="font-semibold text-gray-900 text-sm">{emp.name}</div>
-                      <div className="text-xs text-gray-500 font-mono">{emp.employeeId || emp.email}</div>
+                      <div className="font-semibold text-gray-900 text-sm">{empName}</div>
+                      <div className="text-xs text-gray-500 font-mono">{empCode}</div>
                     </div>
                   </div>
 
                   <div className="text-xs text-right">
-                    <div className="font-medium text-gray-700">{emp.departmentName || 'Active Contract'}</div>
-                    <div className="text-[11px] text-emerald-600 font-semibold">Contract Valid</div>
+                    <div className="font-medium text-gray-700">{deptName}</div>
+                    <div className="text-[11px] text-emerald-600 font-semibold">
+                      {contract?.contractNumber ? `Contract: ${contract.contractNumber}` : 'Contract Valid'}
+                    </div>
                   </div>
                 </div>
               );

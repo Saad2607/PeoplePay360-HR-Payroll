@@ -39,8 +39,8 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-md w-full p-8 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-brand-950 to-purple-950 flex items-center justify-center p-4">
+      <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden max-w-md w-full p-8 space-y-6 border border-brand-100">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-brand-500/30">
             <ShieldCheck className="w-7 h-7" />
