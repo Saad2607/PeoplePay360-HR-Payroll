@@ -15,7 +15,7 @@ export const LoginPage = () => {
   const demoAccounts = [
     { role: 'HR Manager (Priya)', email: 'hrmanager@peoplepay360.com' },
     { role: 'System Admin', email: 'admin@peoplepay360.com' },
-    { role: 'HR Payroll User (Krish)', email: 'payrolluser@peoplepay360.com font-bold' },
+    { role: 'HR Payroll User (Krish)', email: 'payrolluser@peoplepay360.com' },
     { role: 'Standard Employee (Rohan)', email: 'employee@peoplepay360.com' },
   ];
 
