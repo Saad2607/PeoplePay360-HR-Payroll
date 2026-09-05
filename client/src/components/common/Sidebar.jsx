@@ -10,6 +10,8 @@ export const Sidebar = () => {
     { label: 'Dashboard', path: '/', icon: LayoutDashboard },
     { label: 'Employees', path: '/employees', icon: Users },
     { label: 'Contracts', path: '/contracts', icon: FileText },
+    { label: 'Attendance', path: '/attendance', icon: Clock },
+    { label: 'Time Off & Leaves', path: '/timeoff', icon: Calendar },
   ];
 
   const integrationItems = [

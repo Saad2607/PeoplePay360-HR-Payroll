@@ -7,6 +7,8 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EmployeesPage } from './pages/EmployeesPage';
 import { ContractsPage } from './pages/ContractsPage';
+import { AttendancePage } from './pages/AttendancePage';
+import { TimeOffPage } from './pages/TimeOffPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
@@ -61,6 +63,22 @@ export default function App() {
             element={
               <ProtectedLayout>
                 <ContractsPage />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedLayout>
+                <AttendancePage />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/timeoff"
+            element={
+              <ProtectedLayout>
+                <TimeOffPage />
               </ProtectedLayout>
             }
           />

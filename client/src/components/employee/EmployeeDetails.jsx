@@ -3,6 +3,9 @@ import { employeeApi } from '../../api/employeeApi';
 import { contractApi } from '../../api/contractApi';
 import { Badge } from '../common/Badge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { AttendanceList } from '../attendance/AttendanceList';
+import { TimeOffRequestList } from '../timeoff/TimeOffRequestList';
+import { AllocationList } from '../timeoff/AllocationList';
 import {
   User,
   Mail,
@@ -427,22 +430,58 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         </div>
       )}
 
-      {/* Krish Integration Tabs */}
-      {['attendance', 'timeoff', 'allocations'].includes(activeTab) && (
-        <div className="bg-white p-8 rounded-2xl border border-gray-200 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center mx-auto">
-            <Clock className="w-6 h-6" />
+      {/* Tab: Attendance Logs */}
+      {activeTab === 'attendance' && (
+        <div className="space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <Clock className="w-5 h-5 text-brand-600 mr-2" /> Employee Attendance Logs
+            </h3>
+            <AttendanceList
+              attendanceRecords={employee.attendances || []}
+              onManualCorrection={() => {}}
+            />
+            {(!employee.attendances || employee.attendances.length === 0) && (
+              <p className="text-sm text-gray-500 text-center py-4">No attendance logs recorded for this employee.</p>
+            )}
           </div>
-          <h3 className="text-lg font-bold text-gray-900 capitalize">
-            {activeTab} Module Integration Hook
-          </h3>
-          <p className="text-sm text-gray-500 max-w-md mx-auto">
-            This section renders real employee virtual bindings (`employee.{activeTab}`). Krish can populate this tab using the standard `Attendance` and `TimeOff` endpoints.
-          </p>
-          <div className="inline-block bg-slate-50 border border-slate-200 p-4 rounded-xl text-left text-xs font-mono text-slate-700">
-            <div>// Krish Integration API Hook</div>
-            <div>GET /api/attendance?employee={employee._id}</div>
-            <div>GET /api/timeoff?employee={employee._id}</div>
+        </div>
+      )}
+
+      {/* Tab: Time Off Requests */}
+      {activeTab === 'timeoff' && (
+        <div className="space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <Calendar className="w-5 h-5 text-brand-600 mr-2" /> Leave Requests History
+            </h3>
+            <TimeOffRequestList
+              requests={employee.timeOffRequests || []}
+              onApprove={() => {}}
+              onRefuse={() => {}}
+              onCancel={() => {}}
+            />
+            {(!employee.timeOffRequests || employee.timeOffRequests.length === 0) && (
+              <p className="text-sm text-gray-500 text-center py-4">No leave requests submitted for this employee.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Leave Allocations */}
+      {activeTab === 'allocations' && (
+        <div className="space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <FileText className="w-5 h-5 text-brand-600 mr-2" /> Leave Allocations
+            </h3>
+            <AllocationList
+              allocations={employee.allocations || []}
+              balances={[]}
+            />
+            {(!employee.allocations || employee.allocations.length === 0) && (
+              <p className="text-sm text-gray-500 text-center py-4">No leave allocations assigned to this employee.</p>
+            )}
           </div>
         </div>
       )}
