@@ -20,6 +20,20 @@ export default {
           900: '#4c1d95',
           950: '#2e1065',
         }
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideInLeft: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.15s ease-out',
+        'slide-in-left': 'slideInLeft 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
       }
     },
   },

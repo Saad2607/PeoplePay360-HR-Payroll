@@ -1,4 +1,5 @@
 const payrollService = require('../services/payrollService');
+const dashboardService = require('../services/dashboardService');
 const { successResponse } = require('../utils/apiResponse');
 
 /**
@@ -44,7 +45,22 @@ const getApplicableContract = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   GET /api/payroll/dashboard
+ * @desc    Retrieve real-time consolidated operational and payroll dashboard metrics
+ * @access  Private
+ */
+const getDashboardSummary = async (req, res, next) => {
+  try {
+    const summary = await dashboardService.getDashboardSummary(req.query, req.user);
+    return successResponse(res, summary, 'Dashboard metrics retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   calculateEmployeePayslip,
-  getApplicableContract
+  getApplicableContract,
+  getDashboardSummary
 };

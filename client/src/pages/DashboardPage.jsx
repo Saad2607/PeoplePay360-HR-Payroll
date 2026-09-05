@@ -1,138 +1,130 @@
-import React, { useState, useEffect } from 'react';
-import { employeeApi } from '../api/employeeApi';
-import { contractApi } from '../api/contractApi';
-import { departmentApi } from '../api/departmentApi';
-import { Users, FileText, Building2, TrendingUp, Plus, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { dashboardApi } from '../api/dashboardApi';
+import { PageHeader } from '../components/common/PageHeader';
+import { StatusBadge } from '../components/common/StatusBadge';
+import { ErrorMessage } from '../components/common/ErrorMessage';
+import { DashboardFilters } from '../components/dashboard/DashboardFilters';
+import { DashboardKpiCards } from '../components/dashboard/DashboardKpiCards';
+import { OperationalAlerts } from '../components/dashboard/OperationalAlerts';
+import { PayrollCharts } from '../components/dashboard/PayrollCharts';
+import { AttendanceTimeOffOverview } from '../components/dashboard/AttendanceTimeOffOverview';
+import { DepartmentBreakdown } from '../components/dashboard/DepartmentBreakdown';
+import { Sparkles, ShieldCheck, Download, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const DashboardPage = () => {
-  const { user, isHRManager } = useAuth();
-  const [stats, setStats] = useState({
-    totalEmployees: 0,
-    activeContracts: 0,
-    totalDepartments: 0,
-    recentEmployees: [],
+  const { user } = useAuth();
+
+  // Filter States
+  const [filters, setFilters] = useState({
+    period: 'all',
+    department: '',
+    employeeType: '',
   });
+
+  // Data States
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load real backend dashboard metrics
+  const loadDashboardData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await dashboardApi.getSummary({
+        period: filters.period,
+        department: filters.department || undefined,
+        employeeType: filters.employeeType || undefined,
+      });
+      setSummary(res.data || {});
+    } catch (err) {
+      setError(err.message || 'Failed to retrieve real-time dashboard metrics');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      setLoading(true);
-      try {
-        const [empRes, ctrRes, deptRes] = await Promise.all([
-          employeeApi.getAll({ limit: 10 }),
-          contractApi.getAll({ status: 'Active' }),
-          departmentApi.getAll(),
-        ]);
+    loadDashboardData();
+  }, [loadDashboardData]);
 
-        setStats({
-          totalEmployees: empRes.meta?.total || empRes.data?.length || 0,
-          activeContracts: ctrRes.meta?.total || ctrRes.data?.length || 0,
-          totalDepartments: deptRes.data?.length || 0,
-          recentEmployees: empRes.data?.slice(0, 5) || [],
-        });
-      } catch (err) {
-        console.error('Failed to load stats', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardStats();
-  }, []);
-
-  if (loading) return <LoadingSpinner fullScreen label="Loading PeoplePay360 Dashboard analytics..." />;
+  const kpis = summary?.kpis || {};
+  const charts = summary?.charts || {};
+  const alerts = summary?.alerts || {};
+  const attendance = summary?.attendance || {};
+  const timeOff = summary?.timeOff || {};
+  const departments = summary?.departmentBreakdown || [];
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 space-y-2">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-md">
-            <ShieldCheck className="w-4 h-4 mr-1 text-emerald-300" /> PeoplePay360 HR Suite 2026
+    <div className="space-y-6 pb-12">
+      {/* 1. Page Header */}
+      <PageHeader
+        title="Payroll & Workforce Intelligence"
+        subtitle="Real-time operational visibility across payroll disbursements, attendance logs, leave balances, and department costs."
+        badge={
+          <div className="flex items-center space-x-2">
+            <StatusBadge status={user?.role || 'Employee'} size="sm" />
+            <span className="hidden sm:inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+              Live Database Connected
+            </span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">
-            Welcome back, {user?.name || 'User'}!
-          </h1>
-          <p className="text-sm text-brand-100 max-w-xl">
-            Manage your organization's employees, contracts, working schedules, and payroll integrations seamlessly in real-time.
-          </p>
-        </div>
-      </div>
-
-      {/* Analytics Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Employees</span>
-            <div className="text-3xl font-extrabold text-gray-900 mt-1">{stats.totalEmployees}</div>
-            <Link to="/employees" className="text-xs text-brand-600 font-semibold hover:underline flex items-center mt-2">
-              View All Directory <ArrowRight className="w-3 h-3 ml-1" />
+        }
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Executive Dashboard' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-2.5">
+            <Link
+              to="/payroll"
+              className="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              Process Payrun
             </Link>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
-            <Users className="w-6 h-6" />
-          </div>
-        </div>
+        }
+      />
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Contracts</span>
-            <div className="text-3xl font-extrabold text-emerald-600 mt-1">{stats.activeContracts}</div>
-            <Link to="/contracts" className="text-xs text-emerald-600 font-semibold hover:underline flex items-center mt-2">
-              View Active Contracts <ArrowRight className="w-3 h-3 ml-1" />
-            </Link>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-            <FileText className="w-6 h-6" />
-          </div>
-        </div>
+      {/* 2. Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Dashboard Synchronization Notice"
+          message={error}
+          onRetry={loadDashboardData}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Departments</span>
-            <div className="text-3xl font-extrabold text-indigo-600 mt-1">{stats.totalDepartments}</div>
-            <span className="text-xs text-gray-400 block mt-2">Real-time counts active</span>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-            <Building2 className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
+      {/* 3. Real-Time Filters */}
+      <DashboardFilters
+        filters={filters}
+        onFilterChange={setFilters}
+        onRefresh={loadDashboardData}
+        loading={loading}
+      />
 
-      {/* Quick Action Grid */}
-      <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-gray-900">Quick Operations</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Link
-            to="/employees"
-            className="p-4 rounded-xl border border-gray-200 hover:border-brand-300 hover:bg-brand-50/50 transition flex items-center space-x-4 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center group-hover:scale-105 transition">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm">Employee Directory & Form</h4>
-              <p className="text-xs text-gray-500">Filter, search, view identity, position & schedules.</p>
-            </div>
-          </Link>
+      {/* 4. Dashboard KPI Cards */}
+      <DashboardKpiCards kpis={kpis} loading={loading} />
 
-          <Link
-            to="/contracts"
-            className="p-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition flex items-center space-x-4 group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="font-bold text-gray-900 text-sm">Contract Management & History</h4>
-              <p className="text-xs text-gray-500">Manage salary structures, wage types & active contracts.</p>
-            </div>
-          </Link>
-        </div>
-      </div>
+      {/* 5. Operational Compliance & Action Alerts */}
+      <OperationalAlerts alerts={alerts} loading={loading} />
+
+      {/* 6. Real-Data Payroll Charts */}
+      <PayrollCharts charts={charts} loading={loading} />
+
+      {/* 7. Attendance & Time Off Overview */}
+      <AttendanceTimeOffOverview
+        attendance={attendance}
+        timeOff={timeOff}
+        loading={loading}
+      />
+
+      {/* 8. Department Breakdown Table */}
+      <DepartmentBreakdown departments={departments} loading={loading} />
     </div>
   );
 };

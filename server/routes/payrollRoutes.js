@@ -24,4 +24,10 @@ router.get(
   payrollController.getApplicableContract
 );
 
+// Get real-time operational dashboard summary metrics
+router.get(
+  '/dashboard',
+  payrollController.getDashboardSummary
+);
+
 module.exports = router;

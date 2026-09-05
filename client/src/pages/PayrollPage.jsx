@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { payrunApi } from '../api/payrunApi';
 import { payslipApi } from '../api/payslipApi';
 import { salaryStructureApi } from '../api/salaryStructureApi';
@@ -26,8 +27,20 @@ import {
 
 export const PayrollPage = () => {
   const { isHRManager, isPayrollUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState('payruns'); // 'payruns' | 'payslips' | 'structures'
+  const urlTab = searchParams.get('tab');
+  const initialTab = ['payruns', 'payslips', 'structures'].includes(urlTab) ? urlTab : 'payruns';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Sync tab state whenever URL query params change (e.g. from sidebar clicks)
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab && ['payruns', 'payslips', 'structures'].includes(currentTab)) {
+      setActiveTab(currentTab);
+    }
+  }, [searchParams]);
+
   const [selectedPayrunId, setSelectedPayrunId] = useState(null);
   const [selectedPayslipId, setSelectedPayslipId] = useState(null);
 
@@ -187,6 +200,7 @@ export const PayrollPage = () => {
           <button
             onClick={() => {
               setActiveTab('payruns');
+              setSearchParams({ tab: 'payruns' });
               setPage(1);
             }}
             className={`py-4 border-b-2 transition flex items-center ${
@@ -201,6 +215,7 @@ export const PayrollPage = () => {
           <button
             onClick={() => {
               setActiveTab('payslips');
+              setSearchParams({ tab: 'payslips' });
               setPage(1);
             }}
             className={`py-4 border-b-2 transition flex items-center ${
@@ -213,7 +228,11 @@ export const PayrollPage = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('structures')}
+            onClick={() => {
+              setActiveTab('structures');
+              setSearchParams({ tab: 'structures' });
+              setPage(1);
+            }}
             className={`py-4 border-b-2 transition flex items-center ${
               activeTab === 'structures'
                 ? 'border-brand-600 text-brand-600 font-semibold'

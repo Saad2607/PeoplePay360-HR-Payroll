@@ -1,4 +1,7 @@
 import React from 'react';
+import { StatusBadge } from './StatusBadge';
+
+export { StatusBadge };
 
 const colorVariants = {
   Active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -13,13 +16,27 @@ const colorVariants = {
   Intern: 'bg-teal-50 text-teal-700 border-teal-200',
 };
 
-export const Badge = ({ children, status = '', className = '' }) => {
-  const variantClass = colorVariants[status] || colorVariants[children] || 'bg-gray-100 text-gray-700 border-gray-200';
+export const Badge = ({ children, status = '', className = '', size = 'md', showDot = true }) => {
+  // If custom colorVariants match, preserve exact styling; otherwise use StatusBadge
+  const rawKey = status || (typeof children === 'string' ? children : '');
+  if (rawKey && !colorVariants[rawKey]) {
+    return (
+      <StatusBadge status={status} size={size} showDot={showDot} className={className}>
+        {children}
+      </StatusBadge>
+    );
+  }
+
+  const variantClass =
+    colorVariants[status] ||
+    (typeof children === 'string' && colorVariants[children]) ||
+    'bg-gray-100 text-gray-700 border-gray-200';
+
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${variantClass} ${className}`}
     >
-      <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-current opacity-75" />
+      {showDot && <span className="w-1.5 h-1.5 mr-1.5 rounded-full bg-current opacity-75" />}
       {children || status}
     </span>
   );
