@@ -135,7 +135,7 @@ export const PayrollManagerDashboard = () => {
       />
 
       {/* Executive Header Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-md">
             <ShieldCheck className="w-4 h-4 mr-1 text-emerald-300" /> Executive Payroll & Compensation Controls

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
+// Vite configuration for PeoplePay360
 export default defineConfig({
   plugins: [react()],
   server: {

@@ -15,6 +15,7 @@ import {
   BarChart3
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
+import { Logo } from './Logo';
 import { Link } from 'react-router-dom';
 
 /**
@@ -63,20 +64,8 @@ export const Navbar = ({
           </button>
 
           {/* Logo & Brand title */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white flex items-center justify-center shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-lg sm:text-xl font-black bg-gradient-to-r from-brand-700 to-indigo-700 bg-clip-text text-transparent tracking-tight">
-                  PeoplePay360
-                </span>
-                <span className="hidden sm:inline-flex px-2 py-0.5 text-[11px] font-semibold bg-brand-50 text-brand-700 rounded-md border border-brand-200">
-                  HR & Payroll
-                </span>
-              </div>
-            </div>
+          <Link to="/" className="flex items-center group transition-transform">
+            <Logo size="md" showText={true} showSubtitle={true} />
           </Link>
         </div>
 
@@ -91,7 +80,7 @@ export const Navbar = ({
               aria-expanded={isProfileOpen}
               aria-haspopup="true"
             >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-700 via-brand-600 to-brand-500 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0">
                 {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
               </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
+import { Logo } from '../components/common/Logo';
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -41,14 +42,11 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-brand-950 to-purple-950 flex items-center justify-center p-4">
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden max-w-md w-full p-8 space-y-6 border border-brand-100">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-brand-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-brand-500/30">
-            <ShieldCheck className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-gray-900">PeoplePay360</h1>
-          <p className="text-xs text-gray-500 font-medium">HR & Payroll Management System</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-md w-full p-8 space-y-6 border border-slate-200/80">
+        <div className="text-center flex flex-col items-center">
+          <Logo size="lg" showText={true} showSubtitle={true} className="flex-col items-center !space-x-0 space-y-2.5" />
+          <p className="text-xs text-slate-500 font-medium mt-2">Enterprise HR &amp; Payroll Management Platform</p>
         </div>
 
         {error && (
@@ -70,7 +68,7 @@ export const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@peoplepay360.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -87,7 +85,7 @@ export const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button
                 type="button"
@@ -108,7 +106,7 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 text-sm font-semibold text-white bg-brand-600 rounded-xl hover:bg-brand-700 shadow-md shadow-brand-600/20 transition flex items-center justify-center disabled:opacity-50"
+            className="w-full py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-600/25 transition-all duration-150 flex items-center justify-center disabled:opacity-50 active:scale-[0.99]"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In to Account'}
           </button>
@@ -127,8 +125,8 @@ export const LoginPage = () => {
                 onClick={() => setDemoAccount(acc.email)}
                 className={`w-full text-left px-3 py-1.5 rounded-lg border text-xs flex items-center justify-between transition ${
                   email === acc.email
-                    ? 'bg-brand-50 border-brand-300 text-brand-700 font-semibold'
-                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold shadow-2xs'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <span>{acc.role}</span>

@@ -85,7 +85,7 @@ export const StatCard = ({
 
   return (
     <div
-      className={`bg-white p-6 rounded-2xl border border-gray-200 shadow-sm transition-all duration-200 flex flex-col justify-between ${theme.borderHover} ${className}`}
+      className={`bg-white p-6 rounded-2xl border border-gray-200 shadow-sm transition-all duration-200 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 ${theme.borderHover} ${className}`}
     >
       <div>
         <div className="flex items-center justify-between gap-3">

@@ -40,12 +40,13 @@ const generatePayslipPdf = async (payslip) => {
       doc.on('end', () => resolve(Buffer.concat(buffers)));
       doc.on('error', (err) => reject(err));
 
-      const primaryColor = '#1e3a8a';   // Deep Blue
-      const secondaryColor = '#3b82f6'; // Light Blue
-      const darkText = '#1f2937';       // Gray 800
-      const mutedText = '#6b7280';      // Gray 500
-      const lightBg = '#f3f4f6';        // Gray 100
-      const borderColor = '#e5e7eb';    // Gray 200
+      const primaryColor = '#1e3a8a';   // Enterprise Deep Navy
+      const secondaryColor = '#2563eb'; // Enterprise Royal Blue
+      const accentColor = '#4f46e5';    // Electric Indigo
+      const darkText = '#0f172a';       // Obsidian Slate
+      const mutedText = '#64748b';      // Slate Muted
+      const lightBg = '#f8fafc';        // Clean Slate Background
+      const borderColor = '#e2e8f0';    // Subtle Border Slate
 
       const pageWidth = doc.page.width; // ~595 pt
       const margin = 40;

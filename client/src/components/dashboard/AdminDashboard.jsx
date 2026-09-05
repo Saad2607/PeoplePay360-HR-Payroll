@@ -120,11 +120,11 @@ export const AdminDashboard = () => {
       />
 
       {/* Admin Executive Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold border border-purple-500/30">
-              <ShieldCheck className="w-4 h-4 mr-1 text-purple-400" /> Enterprise Super-Admin Console
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-sky-300 text-xs font-semibold border border-white/15 backdrop-blur-xs">
+              <ShieldCheck className="w-4 h-4 mr-1 text-sky-400" /> Enterprise Super-Admin Console
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight">
               Company Administration: Welcome, {user?.name}!
@@ -136,9 +136,9 @@ export const AdminDashboard = () => {
 
           <Link
             to="/admin/users"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-md hover:bg-purple-50 transition"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-md hover:bg-slate-50 transition"
           >
-            <Users className="w-5 h-5 mr-2 text-purple-700" />
+            <Users className="w-5 h-5 mr-2 text-brand-600" />
             Manage System Users
           </Link>
         </div>
@@ -208,11 +208,11 @@ export const AdminDashboard = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {[
-            { label: 'Admins', role: 'Admin', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+            { label: 'Admins', role: 'Admin', color: 'bg-slate-900 text-white border-slate-800' },
             { label: 'HR Managers', role: 'HR Manager', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-            { label: 'Payroll Managers', role: 'HR Payroll Manager', color: 'bg-teal-50 text-teal-700 border-teal-200' },
-            { label: 'Payroll Users', role: 'HR Payroll User', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-            { label: 'Employees', role: 'Employee', color: 'bg-slate-50 text-slate-700 border-slate-200' },
+            { label: 'Payroll Managers', role: 'HR Payroll Manager', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+            { label: 'Payroll Users', role: 'HR Payroll User', color: 'bg-sky-50 text-sky-700 border-sky-200' },
+            { label: 'Employees', role: 'Employee', color: 'bg-slate-100 text-slate-700 border-slate-200' },
           ].map((item, idx) => (
             <div key={idx} className={`p-4 rounded-xl border ${item.color} flex flex-col justify-between`}>
               <span className="text-xs font-bold">{item.label}</span>

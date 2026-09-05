@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-800 font-sans selection:bg-brand-500 selection:text-white;
+    @apply bg-slate-50 text-slate-900 font-sans selection:bg-brand-600 selection:text-white;
   }
 }
 
@@ -14,12 +14,50 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f5f3ff;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c4b5fd;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: #94a3b8;
+}
+
+/* Enterprise Corporate Brand Scale Guarantees */
+@layer utilities {
+  .bg-brand-50 { background-color: #eff6ff !important; }
+  .bg-brand-100 { background-color: #dbeafe !important; }
+  .bg-brand-200 { background-color: #bfdbfe !important; }
+  .bg-brand-300 { background-color: #93c5fd !important; }
+  .bg-brand-400 { background-color: #60a5fa !important; }
+  .bg-brand-500 { background-color: #3b82f6 !important; }
+  .bg-brand-600 { background-color: #2563eb !important; }
+  .bg-brand-700 { background-color: #1d4ed8 !important; }
+  .bg-brand-800 { background-color: #1e40af !important; }
+  .bg-brand-900 { background-color: #1e3a8a !important; }
+  .bg-brand-950 { background-color: #0f172a !important; }
+
+  .hover\:bg-brand-50:hover { background-color: #eff6ff !important; }
+  .hover\:bg-brand-100:hover { background-color: #dbeafe !important; }
+  .hover\:bg-brand-700:hover { background-color: #1d4ed8 !important; }
+  .hover\:bg-brand-800:hover { background-color: #1e40af !important; }
+
+  .text-brand-500 { color: #3b82f6 !important; }
+  .text-brand-600 { color: #2563eb !important; }
+  .text-brand-700 { color: #1d4ed8 !important; }
+  .text-brand-800 { color: #1e40af !important; }
+  .text-brand-900 { color: #1e3a8a !important; }
+
+  .hover\:text-brand-600:hover { color: #2563eb !important; }
+  .hover\:text-brand-700:hover { color: #1d4ed8 !important; }
+
+  .border-brand-200 { border-color: #bfdbfe !important; }
+  .border-brand-300 { border-color: #93c5fd !important; }
+  .border-brand-500 { border-color: #3b82f6 !important; }
+  .border-brand-600 { border-color: #2563eb !important; }
+  .border-brand-700 { border-color: #1d4ed8 !important; }
+
+  .focus\:ring-brand-500:focus { --tw-ring-color: #3b82f6 !important; }
+  .focus\:ring-brand-600:focus { --tw-ring-color: #2563eb !important; }
 }

@@ -113,7 +113,7 @@ export const HRManagerDashboard = () => {
       />
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 space-y-2">
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-md">
             <ShieldCheck className="w-4 h-4 mr-1 text-emerald-300" /> HR Operations Command Center
@@ -121,7 +121,7 @@ export const HRManagerDashboard = () => {
           <h1 className="text-3xl font-extrabold tracking-tight">
             Welcome back, {user?.name}!
           </h1>
-          <p className="text-sm text-brand-100 max-w-2xl">
+          <p className="text-sm text-blue-100 max-w-2xl">
             Oversee employee records, contracts, working schedules, attendance validation, and time-off request approvals across the organization.
           </p>
           <div className="pt-3 flex flex-wrap gap-2.5">

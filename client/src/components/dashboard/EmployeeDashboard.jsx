@@ -172,7 +172,7 @@ export const EmployeeDashboard = () => {
       />
 
       {/* Profile & Welcome Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-brand-900 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">

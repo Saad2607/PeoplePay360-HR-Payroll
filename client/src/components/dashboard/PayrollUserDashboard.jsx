@@ -67,25 +67,25 @@ export const PayrollUserDashboard = () => {
       />
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
-              <IndianRupee className="w-4 h-4 mr-1 text-emerald-400" /> Payroll Operations & Processing
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/10 text-sky-300 text-xs font-semibold border border-white/15 backdrop-blur-xs">
+              <IndianRupee className="w-4 h-4 mr-1 text-sky-400" /> Payroll Operations & Processing
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight">
               Welcome, {user?.name}!
             </h1>
-            <p className="text-sm text-emerald-100 max-w-2xl">
+            <p className="text-sm text-slate-300 max-w-2xl">
               Process monthly payruns, compute automated deductions from attendance records, review generated payslips, and export payroll reports.
             </p>
           </div>
 
           <Link
             to="/payroll"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white text-emerald-900 font-bold text-sm shadow-md hover:bg-emerald-50 transition"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-md hover:bg-slate-50 transition"
           >
-            <PlayCircle className="w-5 h-5 mr-2 text-emerald-700" />
+            <PlayCircle className="w-5 h-5 mr-2 text-brand-600" />
             Launch Payrun Wizard
           </Link>
         </div>
