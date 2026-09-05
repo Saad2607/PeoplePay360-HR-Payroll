@@ -12,6 +12,7 @@ export const Sidebar = () => {
     { label: 'Contracts', path: '/contracts', icon: FileText },
     { label: 'Attendance', path: '/attendance', icon: Clock },
     { label: 'Time Off & Leaves', path: '/timeoff', icon: Calendar },
+    { label: 'Payroll & Payruns', path: '/payroll', icon: DollarSign },
   ];
 
   const integrationItems = [

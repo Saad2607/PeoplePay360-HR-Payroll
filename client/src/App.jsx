@@ -9,6 +9,7 @@ import { EmployeesPage } from './pages/EmployeesPage';
 import { ContractsPage } from './pages/ContractsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { TimeOffPage } from './pages/TimeOffPage';
+import { PayrollPage } from './pages/PayrollPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
@@ -79,6 +80,14 @@ export default function App() {
             element={
               <ProtectedLayout>
                 <TimeOffPage />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/payroll"
+            element={
+              <ProtectedLayout>
+                <PayrollPage />
               </ProtectedLayout>
             }
           />
