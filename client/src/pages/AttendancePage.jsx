@@ -8,6 +8,7 @@ import { ManualCorrectionModal } from '../components/attendance/ManualCorrection
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import {
   LogIn,
@@ -109,30 +110,31 @@ export const AttendancePage = () => {
   return (
     <div className="space-y-6">
       {/* Header & Quick Action Console */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Attendance & Time Tracker</h1>
-          <p className="text-sm text-gray-500">
-            Real-time worked hours, shift check-ins/outs, overtime, and audit logs.
-          </p>
-        </div>
+      <PageHeader
+        title="Attendance & Time Tracker"
+        subtitle="Real-time worked hours, shift check-ins/outs, overtime, and audit logs."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Attendance' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => handleOpenConsole('checkIn')}
+              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/20 transition"
+            >
+              <LogIn className="w-4 h-4 mr-2" /> Check In
+            </button>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => handleOpenConsole('checkIn')}
-            className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/20 transition"
-          >
-            <LogIn className="w-4 h-4 mr-2" /> Check In
-          </button>
-
-          <button
-            onClick={() => handleOpenConsole('checkOut')}
-            className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition"
-          >
-            <LogOut className="w-4 h-4 mr-2" /> Check Out
-          </button>
-        </div>
-      </div>
+            <button
+              onClick={() => handleOpenConsole('checkOut')}
+              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition"
+            >
+              <LogOut className="w-4 h-4 mr-2" /> Check Out
+            </button>
+          </div>
+        }
+      />
 
       {/* Missing Checkouts Alert Banner */}
       {isHRManager && missingCheckouts.length > 0 && (

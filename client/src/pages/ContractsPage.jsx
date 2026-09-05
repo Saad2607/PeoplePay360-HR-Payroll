@@ -8,6 +8,7 @@ import { ContractDetailsModal } from '../components/contract/ContractDetailsModa
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import { Plus, FileText, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -105,23 +106,24 @@ export const ContractsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Contract Management</h1>
-          <p className="text-sm text-gray-500">
-            Manage wage structures, salary breakdown components, and period-specific active contracts.
-          </p>
-        </div>
-
-        {isHRManager && (
-          <button
-            onClick={handleCreateNew}
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-          >
-            <Plus className="w-4 h-4 mr-1.5" /> Create Contract
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Contract Management"
+        subtitle="Manage wage structures, salary breakdown components, and period-specific active contracts."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Contracts' },
+        ]}
+        actions={
+          isHRManager && (
+            <button
+              onClick={handleCreateNew}
+              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+            >
+              <Plus className="w-4 h-4 mr-1.5" /> Create Contract
+            </button>
+          )
+        }
+      />
 
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-3">

@@ -13,6 +13,7 @@ import { SalaryStructureFormModal } from '../components/payroll/SalaryStructureF
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import {
   DollarSign,
@@ -162,37 +163,38 @@ export const PayrollPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Payroll Management Engine</h1>
-          <p className="text-sm text-gray-500">
-            Process payruns, compute salary rules, generate payslips, and stream vector PDFs.
-          </p>
-        </div>
+      <PageHeader
+        title="Payroll Management Engine"
+        subtitle="Process payruns, compute salary rules, generate payslips, and stream vector PDFs."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Payroll' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            {activeTab === 'payruns' && isPayrollUser && (
+              <button
+                onClick={() => setIsWizardOpen(true)}
+                className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> New Payrun Wizard
+              </button>
+            )}
 
-        <div className="flex items-center space-x-3">
-          {activeTab === 'payruns' && isPayrollUser && (
-            <button
-              onClick={() => setIsWizardOpen(true)}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> New Payrun Wizard
-            </button>
-          )}
-
-          {activeTab === 'structures' && isHRManager && (
-            <button
-              onClick={() => {
-                setEditingStructure(null);
-                setIsStructureModalOpen(true);
-              }}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
-            </button>
-          )}
-        </div>
-      </div>
+            {activeTab === 'structures' && isHRManager && (
+              <button
+                onClick={() => {
+                  setEditingStructure(null);
+                  setIsStructureModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
+              </button>
+            )}
+          </div>
+        }
+      />
 
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">

@@ -12,6 +12,7 @@ import { TimeOffTypeFormModal } from '../components/timeoff/TimeOffTypeFormModal
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import {
   Calendar,
@@ -157,46 +158,47 @@ export const TimeOffPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Time Off & Leave Management</h1>
-          <p className="text-sm text-gray-500">
-            Submit leave requests, review HR approval workflows, track allocations & balance rules.
-          </p>
-        </div>
+      <PageHeader
+        title="Time Off & Leave Management"
+        subtitle="Submit leave requests, review HR approval workflows, track allocations & balance rules."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Time Off' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            {activeTab === 'requests' && (
+              <button
+                onClick={() => setIsRequestModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Submit Request
+              </button>
+            )}
 
-        <div className="flex items-center space-x-3">
-          {activeTab === 'requests' && (
-            <button
-              onClick={() => setIsRequestModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Submit Request
-            </button>
-          )}
+            {activeTab === 'allocations' && isHRManager && (
+              <button
+                onClick={() => setIsAllocationModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Grant Allocation
+              </button>
+            )}
 
-          {activeTab === 'allocations' && isHRManager && (
-            <button
-              onClick={() => setIsAllocationModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Grant Allocation
-            </button>
-          )}
-
-          {activeTab === 'types' && isHRManager && (
-            <button
-              onClick={() => {
-                setEditingType(null);
-                setIsTypeModalOpen(true);
-              }}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Add Leave Type
-            </button>
-          )}
-        </div>
-      </div>
+            {activeTab === 'types' && isHRManager && (
+              <button
+                onClick={() => {
+                  setEditingType(null);
+                  setIsTypeModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Add Leave Type
+              </button>
+            )}
+          </div>
+        }
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">
