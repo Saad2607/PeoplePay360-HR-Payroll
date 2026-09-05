@@ -3,14 +3,18 @@ import { Badge } from '../common/Badge';
 import { Eye, Download, FileText, Calendar, DollarSign } from 'lucide-react';
 import { payslipApi } from '../../api/payslipApi';
 
-export const PayslipList = ({ payslips, onViewDetails }) => {
+export const PayslipList = ({ payslips, onViewDetails, onError }) => {
   const handleDownloadPdf = async (id) => {
     try {
       const blob = await payslipApi.downloadPdf(id);
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.open(url, '_blank');
     } catch (err) {
-      alert(err.message || 'Failed to download PDF payslip');
+      if (onError) {
+        onError(err.message || 'Failed to download PDF payslip');
+      } else {
+        console.error(err.message || 'Failed to download PDF payslip');
+      }
     }
   };
 

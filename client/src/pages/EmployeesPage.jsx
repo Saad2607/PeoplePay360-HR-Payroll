@@ -11,6 +11,8 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
 import { PageHeader } from '../components/common/PageHeader';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import { Search, Filter, Plus, LayoutList, Kanban, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -42,6 +44,8 @@ export const EmployeesPage = () => {
   const [contractEmployee, setContractEmployee] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
+  const [confirmDeleteEmp, setConfirmDeleteEmp] = useState(null);
 
   // Load initial dropdowns
   useEffect(() => {
@@ -60,6 +64,7 @@ export const EmployeesPage = () => {
   // Fetch Employees when search/filters/page change
   const fetchEmployees = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = {
         search: search.trim() || undefined,
@@ -77,6 +82,7 @@ export const EmployeesPage = () => {
         setMeta(res.meta);
       }
     } catch (err) {
+      setError(err.message || 'Failed to fetch employee data');
       setToast({ message: err.message || 'Failed to fetch employee data', type: 'error' });
     } finally {
       setLoading(false);
@@ -99,15 +105,20 @@ export const EmployeesPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (emp) => {
-    if (window.confirm(`Are you sure you want to terminate/delete employee record for ${emp.name}?`)) {
-      try {
-        await employeeApi.delete(emp._id);
-        setToast({ message: `Employee ${emp.name} terminated successfully`, type: 'success' });
-        fetchEmployees();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete employee', type: 'error' });
-      }
+  const handleDelete = (emp) => {
+    setConfirmDeleteEmp(emp);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteEmp) return;
+    try {
+      await employeeApi.delete(confirmDeleteEmp._id);
+      setToast({ message: `Employee ${confirmDeleteEmp.name} terminated successfully`, type: 'success' });
+      setConfirmDeleteEmp(null);
+      fetchEmployees();
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to delete employee', type: 'error' });
+      setConfirmDeleteEmp(null);
     }
   };
 
@@ -195,6 +206,16 @@ export const EmployeesPage = () => {
           </div>
         }
       />
+
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Failed to Load Employees"
+          message={error}
+          onRetry={fetchEmployees}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-3">
@@ -339,6 +360,16 @@ export const EmployeesPage = () => {
         onClose={() => setIsContractFormOpen(false)}
         preselectedEmployee={contractEmployee}
         onSuccess={(msg) => setToast({ message: msg, type: 'success' })}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmDeleteEmp}
+        onClose={() => setConfirmDeleteEmp(null)}
+        onConfirm={handleConfirmDelete}
+        title="Terminate Employee"
+        message={`Are you sure you want to terminate/delete the employee record for "${confirmDeleteEmp?.name}"? This action cannot be undone.`}
+        confirmText="Terminate Employee"
+        variant="danger"
       />
 
       {toast.message && <Toast type={toast.type} message={toast.message} onClose={() => setToast({ message: '', type: 'success' })} />}

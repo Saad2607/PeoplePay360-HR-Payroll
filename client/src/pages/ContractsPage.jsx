@@ -9,6 +9,8 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
 import { PageHeader } from '../components/common/PageHeader';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import { Plus, FileText, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -32,6 +34,8 @@ export const ContractsPage = () => {
   const [editingContract, setEditingContract] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
+  const [confirmDeleteContract, setConfirmDeleteContract] = useState(null);
 
   useEffect(() => {
     const loadLookups = async () => {
@@ -51,6 +55,7 @@ export const ContractsPage = () => {
 
   const fetchContracts = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = {
         status: statusFilter || undefined,
@@ -66,6 +71,7 @@ export const ContractsPage = () => {
         setMeta(res.meta);
       }
     } catch (err) {
+      setError(err.message || 'Failed to fetch contracts');
       setToast({ message: err.message || 'Failed to fetch contracts', type: 'error' });
     } finally {
       setLoading(false);
@@ -86,15 +92,20 @@ export const ContractsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (ctr) => {
-    if (window.confirm(`Are you sure you want to delete contract ${ctr.contractNumber}?`)) {
-      try {
-        await contractApi.delete(ctr._id);
-        setToast({ message: `Contract ${ctr.contractNumber} deleted`, type: 'success' });
-        fetchContracts();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete contract', type: 'error' });
-      }
+  const handleDelete = (ctr) => {
+    setConfirmDeleteContract(ctr);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteContract) return;
+    try {
+      await contractApi.delete(confirmDeleteContract._id);
+      setToast({ message: `Contract ${confirmDeleteContract.contractNumber} deleted`, type: 'success' });
+      setConfirmDeleteContract(null);
+      fetchContracts();
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to delete contract', type: 'error' });
+      setConfirmDeleteContract(null);
     }
   };
 
@@ -124,6 +135,16 @@ export const ContractsPage = () => {
           )
         }
       />
+
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Failed to Load Contracts"
+          message={error}
+          onRetry={fetchContracts}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-3">
@@ -257,6 +278,16 @@ export const ContractsPage = () => {
         isOpen={!!selectedContract}
         onClose={() => setSelectedContract(null)}
         contract={selectedContract}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmDeleteContract}
+        onClose={() => setConfirmDeleteContract(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Contract"
+        message={`Are you sure you want to delete contract "${confirmDeleteContract?.contractNumber}"? This action cannot be undone.`}
+        confirmText="Delete Contract"
+        variant="danger"
       />
 
       {toast.message && <Toast type={toast.type} message={toast.message} onClose={() => setToast({ message: '', type: 'success' })} />}

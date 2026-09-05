@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
 import { PageHeader } from '../components/common/PageHeader';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import {
   LogIn,
@@ -44,6 +45,7 @@ export const AttendancePage = () => {
   const [correctingRecord, setCorrectingRecord] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadLookups = async () => {
@@ -63,6 +65,7 @@ export const AttendancePage = () => {
 
   const fetchAttendance = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = {
         status: statusFilter || undefined,
@@ -87,6 +90,7 @@ export const AttendancePage = () => {
         }
       }
     } catch (err) {
+      setError(err.message || 'Failed to load attendance logs');
       setToast({ message: err.message || 'Failed to load attendance logs', type: 'error' });
     } finally {
       setLoading(false);
@@ -135,6 +139,16 @@ export const AttendancePage = () => {
           </div>
         }
       />
+
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Attendance Module Notice"
+          message={error}
+          onRetry={fetchAttendance}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Missing Checkouts Alert Banner */}
       {isHRManager && missingCheckouts.length > 0 && (
