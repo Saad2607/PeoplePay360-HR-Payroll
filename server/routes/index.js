@@ -9,6 +9,7 @@ const departmentRoutes = require('./departmentRoutes');
 const jobPositionRoutes = require('./jobPositionRoutes');
 const contractRoutes = require('./contractRoutes');
 const scheduleRoutes = require('./scheduleRoutes');
+const attendanceRoutes = require('./attendanceRoutes');
 
 // API Health Check
 router.get('/health', (req, res) => {
@@ -32,5 +33,6 @@ router.use('/departments', departmentRoutes);
 router.use('/job-positions', jobPositionRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/schedules', scheduleRoutes);
+router.use('/attendance', attendanceRoutes);
 
 module.exports = router;
