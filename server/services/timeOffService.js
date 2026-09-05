@@ -2,6 +2,7 @@ const TimeOffRequest = require('../models/TimeOffRequest');
 const TimeOffType = require('../models/TimeOffType');
 const Allocation = require('../models/Allocation');
 const Employee = require('../models/Employee');
+const Attendance = require('../models/Attendance');
 
 /**
  * Resolve target employee ID based on user and request body
@@ -119,7 +120,15 @@ const createTimeOffRequest = async ({ user, employeeId, timeOffTypeId, startDate
     duration: requestDuration,
     reason,
     status: 'Pending',
-    allocation: targetAllocation ? targetAllocation._id : null
+    allocation: targetAllocation ? targetAllocation._id : null,
+    workflowLog: [
+      {
+        action: 'Submitted',
+        performedBy: user._id,
+        timestamp: new Date(),
+        comment: reason
+      }
+    ]
   });
 
   return TimeOffRequest.findById(request._id)
@@ -131,6 +140,7 @@ const createTimeOffRequest = async ({ user, employeeId, timeOffTypeId, startDate
 /**
  * Approve a Time Off Request (HR/Admin only)
  * Automatically deducts from the correct leave allocation
+ * Syncs attendance status to 'On Leave'
  */
 const approveTimeOffRequest = async (requestId, user) => {
   const request = await TimeOffRequest.findById(requestId).populate('timeOffType');
@@ -179,8 +189,52 @@ const approveTimeOffRequest = async (requestId, user) => {
   request.approvedBy = user._id;
   request.actionedAt = new Date();
   request.refusalReason = null;
+  request.workflowLog.push({
+    action: 'Approved',
+    performedBy: user._id,
+    timestamp: new Date(),
+    comment: 'Approved by HR Manager'
+  });
 
   await request.save();
+
+  // Sync Attendance: Mark/create attendance as 'On Leave' for the approved period
+  try {
+    const current = new Date(request.startDate);
+    const end = new Date(request.endDate);
+    while (current <= end) {
+      const dayStart = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), current.getUTCDate()));
+      const existingAttendance = await Attendance.findOne({
+        employee: request.employee,
+        date: dayStart
+      });
+
+      if (existingAttendance) {
+        if (!existingAttendance.checkOut) {
+          existingAttendance.status = 'On Leave';
+          existingAttendance.notes = existingAttendance.notes
+            ? `${existingAttendance.notes}; Approved Leave: ${request.timeOffType.name}`
+            : `Approved Leave: ${request.timeOffType.name}`;
+          await existingAttendance.save();
+        }
+      } else {
+        await Attendance.create({
+          employee: request.employee,
+          date: dayStart,
+          checkIn: dayStart,
+          checkOut: dayStart,
+          workedHours: 0,
+          overtimeHours: 0,
+          status: 'On Leave',
+          notes: `Approved Leave: ${request.timeOffType.name}`
+        });
+      }
+      current.setDate(current.getDate() + 1);
+    }
+  } catch (syncErr) {
+    // Non-blocking sync log
+    console.error('Notice: Attendance leave sync error:', syncErr.message);
+  }
 
   const populated = await TimeOffRequest.findById(request._id)
     .populate('employee', 'name email employeeId department jobPosition')
@@ -216,6 +270,12 @@ const refuseTimeOffRequest = async (requestId, refusalReason, user) => {
   request.approvedBy = user._id;
   request.actionedAt = new Date();
   request.refusalReason = refusalReason || 'Refused by HR Manager';
+  request.workflowLog.push({
+    action: 'Refused',
+    performedBy: user._id,
+    timestamp: new Date(),
+    comment: request.refusalReason
+  });
 
   await request.save();
 
@@ -266,6 +326,12 @@ const cancelTimeOffRequest = async (requestId, user) => {
 
   request.status = 'Cancelled';
   request.actionedAt = new Date();
+  request.workflowLog.push({
+    action: 'Cancelled',
+    performedBy: user._id,
+    timestamp: new Date(),
+    comment: 'Cancelled by user'
+  });
   await request.save();
 
   const populated = await TimeOffRequest.findById(request._id)

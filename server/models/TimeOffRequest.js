@@ -60,7 +60,27 @@ const timeOffRequestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Allocation',
       default: null
-    }
+    },
+    workflowLog: [
+      {
+        action: {
+          type: String,
+          enum: ['Submitted', 'Approved', 'Refused', 'Cancelled']
+        },
+        performedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User'
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now
+        },
+        comment: {
+          type: String,
+          default: ''
+        }
+      }
+    ]
   },
   {
     timestamps: true,
