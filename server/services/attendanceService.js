@@ -63,12 +63,16 @@ const checkIn = async ({ user, employeeId, checkInTime, notes }) => {
   let status = 'Present';
   if (employee.workingSchedule && employee.workingSchedule.startTime) {
     const [schedHour, schedMin] = employee.workingSchedule.startTime.split(':').map(Number);
-    const scheduleStartOnDay = new Date(inTime);
-    scheduleStartOnDay.setHours(schedHour, schedMin, 0, 0);
+    const schedMinutes = schedHour * 60 + schedMin;
+    const graceMinutes = 15;
 
-    // 15-minute grace period before marking 'Late'
-    const gracePeriodMs = 15 * 60 * 1000;
-    if (inTime.getTime() > scheduleStartOnDay.getTime() + gracePeriodMs) {
+    const inUtcMinutes = inTime.getUTCHours() * 60 + inTime.getUTCMinutes();
+    const inLocalMinutes = inTime.getHours() * 60 + inTime.getMinutes();
+
+    const isIsoUtc = typeof checkInTime === 'string' && checkInTime.endsWith('Z');
+    const inMinutes = isIsoUtc ? inUtcMinutes : inLocalMinutes;
+
+    if (inMinutes > schedMinutes + graceMinutes) {
       status = 'Late';
     }
   }
