@@ -15,6 +15,10 @@ router.get('/active/:employeeId', contractController.getActiveContract);
 // Contract history lookup by employee ID
 router.get('/employee/:employeeId', contractController.getContractsByEmployee);
 
+// Period-Specific Applicable Contract Engine (Critical business rule for Payroll)
+router.post('/applicable', authorize(...HR_MANAGERS), contractController.getApplicableContract);
+router.get('/applicable/:employeeId', authorize(...HR_MANAGERS), contractController.getApplicableContractByQuery);
+
 // Contract by ID
 router.get('/:id', contractController.getContractById);
 

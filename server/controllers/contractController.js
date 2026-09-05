@@ -102,11 +102,43 @@ const deleteContract = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   POST /api/contracts/applicable
+ * @desc    Get contract applicable to a specific payroll period
+ * @access  Private (HR Managers, Admin)
+ */
+const getApplicableContract = async (req, res, next) => {
+  try {
+    const { employeeId, payrollPeriod } = req.body;
+    const contract = await contractService.getApplicableContract(employeeId, payrollPeriod);
+    return successResponse(res, contract, 'Applicable contract for period retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @route   GET /api/contracts/applicable/:employeeId
+ * @desc    Get contract applicable to dates passed in query params
+ * @access  Private (HR Managers, Admin)
+ */
+const getApplicableContractByQuery = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const contract = await contractService.getApplicableContract(req.params.employeeId, { startDate, endDate });
+    return successResponse(res, contract, 'Applicable contract for period retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getContracts,
   getContractById,
   getContractsByEmployee,
   getActiveContract,
+  getApplicableContract,
+  getApplicableContractByQuery,
   createContract,
   updateContract,
   deleteContract

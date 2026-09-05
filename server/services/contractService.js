@@ -232,12 +232,126 @@ const deleteContract = async (id) => {
   return contract;
 };
 
+/**
+ * CRITICAL BUSINESS RULE:
+ * Retrieve the specific contract applicable to a designated payroll period.
+ *
+ * Payroll must NOT simply use the employee's latest contract, because historical payruns,
+ * salary revisions, and multi-contract employees require the exact contract in force
+ * during the payroll period interval.
+ *
+ * @param {string|ObjectId} employeeId - Target employee ObjectId or ID string
+ * @param {Object|string|Date} payrollPeriod - { startDate, endDate } or single date
+ * @returns {Promise<Object>} Applicable contract document populated with details
+ */
+const getApplicableContract = async (employeeId, payrollPeriod) => {
+  if (!employeeId) {
+    const error = new Error('employeeId is required to find an applicable contract.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!payrollPeriod) {
+    const error = new Error('payrollPeriod is required (provide startDate and endDate).');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  let periodStart;
+  let periodEnd;
+
+  if (typeof payrollPeriod === 'string' || payrollPeriod instanceof Date) {
+    periodStart = new Date(payrollPeriod);
+    periodEnd = new Date(payrollPeriod);
+  } else if (typeof payrollPeriod === 'object') {
+    const startVal = payrollPeriod.startDate || payrollPeriod.from || payrollPeriod.start;
+    const endVal = payrollPeriod.endDate || payrollPeriod.to || payrollPeriod.end || startVal;
+
+    if (!startVal) {
+      const error = new Error('payrollPeriod must have a valid startDate.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    periodStart = new Date(startVal);
+    periodEnd = new Date(endVal);
+  }
+
+  if (isNaN(periodStart.getTime()) || isNaN(periodEnd.getTime())) {
+    const error = new Error('Invalid date format provided for payrollPeriod.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Normalize period to start and end of respective calendar days
+  periodStart.setHours(0, 0, 0, 0);
+  periodEnd.setHours(23, 59, 59, 999);
+
+  // Find candidate contracts:
+  // 1. Belong to target employee
+  // 2. Not Draft or Terminated (Active or Expired historical contracts)
+  // 3. Contract started on or before periodEnd
+  // 4. Contract has not ended before periodStart
+  const candidateContracts = await Contract.find({
+    employee: employeeId,
+    status: { $in: ['Active', 'Expired'] },
+    startDate: { $lte: periodEnd },
+    $or: [
+      { endDate: null },
+      { endDate: { $gte: periodStart } }
+    ]
+  })
+    .populate('department', 'name code')
+    .populate('jobPosition', 'name')
+    .populate('workingSchedule')
+    .sort({ startDate: -1 });
+
+  if (!candidateContracts || candidateContracts.length === 0) {
+    const startStr = periodStart.toISOString().split('T')[0];
+    const endStr = periodEnd.toISOString().split('T')[0];
+    const error = new Error(
+      `No applicable contract found for employee ${employeeId} during payroll period ${startStr} to ${endStr}.`
+    );
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // If single candidate contract, return it immediately
+  if (candidateContracts.length === 1) {
+    return candidateContracts[0];
+  }
+
+  // If multiple contracts span this period, pick the contract with maximum day coverage
+  let bestContract = candidateContracts[0];
+  let maxOverlapMs = 0;
+
+  for (const contract of candidateContracts) {
+    const effectiveStart = Math.max(contract.startDate.getTime(), periodStart.getTime());
+    const contractEndTime = contract.endDate ? contract.endDate.getTime() : periodEnd.getTime();
+    const effectiveEnd = Math.min(contractEndTime, periodEnd.getTime());
+
+    const overlapMs = Math.max(0, effectiveEnd - effectiveStart);
+    if (overlapMs > maxOverlapMs) {
+      maxOverlapMs = overlapMs;
+      bestContract = contract;
+    } else if (overlapMs === maxOverlapMs) {
+      // Tie-breaker: choose more recent contract start date
+      if (contract.startDate.getTime() > bestContract.startDate.getTime()) {
+        bestContract = contract;
+      }
+    }
+  }
+
+  return bestContract;
+};
+
 module.exports = {
   checkContractOverlap,
   getContracts,
   getContractById,
   getContractsByEmployee,
   getActiveContract,
+  getApplicableContract,
   createContract,
   updateContract,
   deleteContract
