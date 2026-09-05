@@ -5,6 +5,7 @@ const JobPosition = require('./JobPosition');
 const Contract = require('./Contract');
 const WorkingSchedule = require('./WorkingSchedule');
 const Attendance = require('./Attendance');
+const TimeOffType = require('./TimeOffType');
 
 module.exports = {
   User,
@@ -13,5 +14,6 @@ module.exports = {
   JobPosition,
   Contract,
   WorkingSchedule,
-  Attendance
+  Attendance,
+  TimeOffType
 };
