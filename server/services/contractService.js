@@ -1,5 +1,74 @@
 const Contract = require('../models/Contract');
 const Employee = require('../models/Employee');
+const Department = require('../models/Department');
+const JobPosition = require('../models/JobPosition');
+const WorkingSchedule = require('../models/WorkingSchedule');
+
+/**
+ * Validate that referenced entities exist in the database before creating or updating contracts
+ */
+const validateContractReferences = async (data, excludeContractId = null) => {
+  const { employee, department, jobPosition, workingSchedule, contractNumber } = data;
+
+  // 1. Contract number uniqueness
+  if (contractNumber) {
+    const query = { contractNumber: contractNumber.toUpperCase() };
+    if (excludeContractId) query._id = { $ne: excludeContractId };
+    const duplicate = await Contract.findOne(query);
+    if (duplicate) {
+      const error = new Error(`A contract with number '${contractNumber.toUpperCase()}' already exists.`);
+      error.statusCode = 409;
+      throw error;
+    }
+  }
+
+  // 2. Validate Employee existence
+  if (employee) {
+    const emp = await Employee.findById(employee);
+    if (!emp) {
+      const error = new Error(`Referenced Employee with id '${employee}' does not exist.`);
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
+  // 3. Validate Department existence
+  if (department) {
+    const dept = await Department.findById(department);
+    if (!dept) {
+      const error = new Error(`Referenced Department with id '${department}' does not exist.`);
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
+  // 4. Validate JobPosition existence & department match
+  if (jobPosition) {
+    const pos = await JobPosition.findById(jobPosition);
+    if (!pos) {
+      const error = new Error(`Referenced Job Position with id '${jobPosition}' does not exist.`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (department && pos.department.toString() !== department.toString()) {
+      const error = new Error(
+        `Job Position '${pos.name}' belongs to department ID '${pos.department}', not '${department}'.`
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+
+  // 5. Validate WorkingSchedule existence if provided
+  if (workingSchedule) {
+    const sched = await WorkingSchedule.findById(workingSchedule);
+    if (!sched) {
+      const error = new Error(`Referenced Working Schedule with id '${workingSchedule}' does not exist.`);
+      error.statusCode = 400;
+      throw error;
+    }
+  }
+};
 
 /**
  * Check if a new or updated active contract overlaps with existing active contracts for the same employee
@@ -128,6 +197,9 @@ const getActiveContract = async (employeeId) => {
 const createContract = async (contractData) => {
   const { employee, startDate, endDate, status = 'Active' } = contractData;
 
+  // Validate relational integrity of foreign keys
+  await validateContractReferences(contractData);
+
   // Enforce business rule: Prevent overlapping active contracts
   if (status === 'Active') {
     const overlapping = await checkContractOverlap(employee, startDate, endDate);
@@ -162,6 +234,9 @@ const updateContract = async (id, updateData) => {
     error.statusCode = 404;
     throw error;
   }
+
+  // Validate relational integrity of updated references
+  await validateContractReferences(updateData, id);
 
   const targetStatus = updateData.status !== undefined ? updateData.status : existingContract.status;
   const targetEmployee = updateData.employee || existingContract.employee;
