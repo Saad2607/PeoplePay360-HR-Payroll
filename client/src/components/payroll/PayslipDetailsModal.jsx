@@ -35,7 +35,7 @@ export const PayslipDetailsModal = ({ isOpen, onClose, payslipId }) => {
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.open(url, '_blank');
     } catch (err) {
-      alert(err.message || 'Failed to download PDF payslip');
+      setError(err.message || 'Failed to download PDF payslip');
     }
   };
 

@@ -9,7 +9,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[850px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Contract Number</th>
@@ -23,7 +23,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {contracts.map((ctr) => {
+            {contracts.map((ctr, idx) => {
               const empName = typeof ctr.employee === 'object' ? ctr.employee?.name : 'N/A';
               const empId = typeof ctr.employee === 'object' ? ctr.employee?.employeeId : '';
               const deptName = typeof ctr.department === 'object' ? ctr.department?.name : 'N/A';
@@ -32,7 +32,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
 
               return (
                 <tr
-                  key={ctr._id}
+                  key={ctr._id || ctr.contractNumber || idx}
                   className={`hover:bg-slate-50/80 transition ${
                     isActive ? 'bg-emerald-50/30' : ''
                   }`}

@@ -12,7 +12,7 @@ export const AllocationList = ({ allocations, balances = [], onEditAllocation })
       {balances.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {balances.map((b, idx) => (
-            <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
+            <div key={b.timeOffTypeCode || b._id || idx} className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-gray-500 uppercase">
                 <span>{b.timeOffTypeName || b.timeOffTypeCode}</span>
                 <span className="font-mono text-[11px] bg-brand-50 text-brand-700 px-1.5 py-0.5 rounded">
@@ -38,7 +38,7 @@ export const AllocationList = ({ allocations, balances = [], onEditAllocation })
       {/* Main Allocations Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
+          <table className="w-full text-left text-sm text-gray-600 min-w-[750px]">
             <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
               <tr>
                 <th className="py-3.5 px-4">Employee</th>
@@ -51,7 +51,7 @@ export const AllocationList = ({ allocations, balances = [], onEditAllocation })
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {allocations.map((alloc) => {
+              {allocations.map((alloc, idx) => {
                 const empName = typeof alloc.employee === 'object' ? alloc.employee?.name : 'N/A';
                 const empId = typeof alloc.employee === 'object' ? alloc.employee?.employeeId : '';
                 const typeName = typeof alloc.timeOffType === 'object' ? alloc.timeOffType?.name : 'N/A';
@@ -62,7 +62,7 @@ export const AllocationList = ({ allocations, balances = [], onEditAllocation })
                 const remaining = alloc.remainingAmount !== undefined ? alloc.remainingAmount : (allocated - taken);
 
                 return (
-                  <tr key={alloc._id} className="hover:bg-slate-50/80 transition">
+                  <tr key={alloc._id || idx} className="hover:bg-slate-50/80 transition">
                     <td className="py-3.5 px-4">
                       <div className="font-semibold text-gray-900">{empName}</div>
                       {empId && <div className="text-xs font-mono text-gray-400">{empId}</div>}

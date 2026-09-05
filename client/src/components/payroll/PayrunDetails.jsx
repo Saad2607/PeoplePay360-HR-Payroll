@@ -129,7 +129,7 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.open(url, '_blank');
     } catch (err) {
-      alert(err.message || 'Failed to download PDF payslip');
+      setError(err.message || 'Failed to download PDF payslip');
     }
   };
 
@@ -299,7 +299,7 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
+          <table className="w-full text-left text-sm text-gray-600 min-w-[750px]">
             <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
               <tr>
                 <th className="py-3 px-4">Payslip #</th>
@@ -313,12 +313,12 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {payslipsList.map((ps) => {
+              {payslipsList.map((ps, idx) => {
                 const empName = typeof ps.employee === 'object' ? ps.employee?.name : 'N/A';
                 const empId = typeof ps.employee === 'object' ? ps.employee?.employeeId : '';
 
                 return (
-                  <tr key={ps._id} className="hover:bg-slate-50/80 transition">
+                  <tr key={ps._id || idx} className="hover:bg-slate-50/80 transition">
                     <td className="py-3 px-4 font-mono font-bold text-gray-900">
                       {ps.payslipNumber || ps._id.slice(-6)}
                     </td>

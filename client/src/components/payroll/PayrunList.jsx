@@ -9,7 +9,7 @@ export const PayrunList = ({ payruns, onSelectPayrun, onDeletePayrun }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[800px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Payrun Name</th>
@@ -22,13 +22,13 @@ export const PayrunList = ({ payruns, onSelectPayrun, onDeletePayrun }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {payruns.map((run) => {
+            {payruns.map((run, idx) => {
               const structName = typeof run.salaryStructure === 'object' ? run.salaryStructure?.name : 'Standard Structure';
               const empCount = run.selectedEmployees?.length || run.payslips?.length || 0;
               const totalNet = run.totalNetSalary || run.summary?.totalNetSalary || 0;
 
               return (
-                <tr key={run._id} className="hover:bg-slate-50/80 transition">
+                <tr key={run._id || idx} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-4 font-bold text-gray-900">
                     <span
                       onClick={() => onSelectPayrun(run)}

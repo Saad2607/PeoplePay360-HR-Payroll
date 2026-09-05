@@ -3,21 +3,25 @@ import { Badge } from '../common/Badge';
 import { Eye, Download, FileText, Calendar, DollarSign } from 'lucide-react';
 import { payslipApi } from '../../api/payslipApi';
 
-export const PayslipList = ({ payslips, onViewDetails }) => {
+export const PayslipList = ({ payslips, onViewDetails, onError }) => {
   const handleDownloadPdf = async (id) => {
     try {
       const blob = await payslipApi.downloadPdf(id);
       const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.open(url, '_blank');
     } catch (err) {
-      alert(err.message || 'Failed to download PDF payslip');
+      if (onError) {
+        onError(err.message || 'Failed to download PDF payslip');
+      } else {
+        console.error(err.message || 'Failed to download PDF payslip');
+      }
     }
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[900px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Payslip #</th>

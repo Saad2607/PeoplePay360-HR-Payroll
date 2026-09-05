@@ -133,8 +133,8 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 bg-white px-6 rounded-xl border">
-        <nav className="flex space-x-8 text-sm font-medium">
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">
+        <nav className="flex space-x-4 sm:space-x-8 text-sm font-medium whitespace-nowrap min-w-max">
           <button
             onClick={() => setActiveTab('overview')}
             className={`py-4 border-b-2 transition ${

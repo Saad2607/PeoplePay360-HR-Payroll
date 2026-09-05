@@ -12,6 +12,9 @@ import { TimeOffTypeFormModal } from '../components/timeoff/TimeOffTypeFormModal
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import {
   Calendar,
@@ -54,10 +57,13 @@ export const TimeOffPage = () => {
   const [editingType, setEditingType] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // Fetch Requests
   const fetchRequests = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await timeOffRequestApi.getAll({
         status: statusFilter || undefined,
@@ -67,6 +73,7 @@ export const TimeOffPage = () => {
       setRequests(res.data || []);
       if (res.meta) setMeta(res.meta);
     } catch (err) {
+      setError(err.message || 'Failed to fetch leave requests');
       setToast({ message: err.message || 'Failed to fetch leave requests', type: 'error' });
     } finally {
       setLoading(false);
@@ -76,6 +83,7 @@ export const TimeOffPage = () => {
   // Fetch Allocations & Balances
   const fetchAllocationsAndBalances = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [allocRes, balRes] = await Promise.all([
         allocationApi.getAll(),
@@ -86,6 +94,7 @@ export const TimeOffPage = () => {
       setAllocations(allocRes.data || []);
       setBalances(balRes.data || []);
     } catch (err) {
+      setError(err.message || 'Failed to fetch leave allocations');
       setToast({ message: err.message || 'Failed to fetch leave allocations', type: 'error' });
     } finally {
       setLoading(false);
@@ -95,10 +104,12 @@ export const TimeOffPage = () => {
   // Fetch Time Off Types
   const fetchTypes = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await timeOffTypeApi.getAll();
       setTypes(res.data || []);
     } catch (err) {
+      setError(err.message || 'Failed to fetch time off types');
       setToast({ message: err.message || 'Failed to fetch time off types', type: 'error' });
     } finally {
       setLoading(false);
@@ -123,27 +134,45 @@ export const TimeOffPage = () => {
     setIsApprovalModalOpen(true);
   };
 
-  const handleCancelRequest = async (req) => {
-    if (window.confirm('Are you sure you want to cancel this leave request?')) {
-      try {
-        await timeOffRequestApi.cancel(req._id);
-        setToast({ message: 'Request cancelled successfully', type: 'success' });
-        fetchRequests();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to cancel request', type: 'error' });
-      }
-    }
+  const handleCancelRequest = (req) => {
+    setConfirmAction({
+      type: 'cancelRequest',
+      data: req,
+      title: 'Cancel Leave Request',
+      message: 'Are you sure you want to cancel this leave request?',
+      confirmText: 'Yes, Cancel Request',
+      variant: 'warning',
+    });
   };
 
-  const handleDeleteType = async (type) => {
-    if (window.confirm(`Are you sure you want to delete time off type "${type.name}"?`)) {
-      try {
-        await timeOffTypeApi.delete(type._id);
-        setToast({ message: `Time off type ${type.name} deleted`, type: 'success' });
+  const handleDeleteType = (type) => {
+    setConfirmAction({
+      type: 'deleteType',
+      data: type,
+      title: 'Delete Time Off Type',
+      message: `Are you sure you want to delete time off type "${type.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Type',
+      variant: 'danger',
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmAction) return;
+    try {
+      if (confirmAction.type === 'cancelRequest') {
+        await timeOffRequestApi.cancel(confirmAction.data._id);
+        setToast({ message: 'Request cancelled successfully', type: 'success' });
+        setConfirmAction(null);
+        fetchRequests();
+      } else if (confirmAction.type === 'deleteType') {
+        await timeOffTypeApi.delete(confirmAction.data._id);
+        setToast({ message: `Time off type ${confirmAction.data.name} deleted`, type: 'success' });
+        setConfirmAction(null);
         fetchTypes();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete time off type', type: 'error' });
       }
+    } catch (err) {
+      setToast({ message: err.message || 'Operation failed', type: 'error' });
+      setConfirmAction(null);
     }
   };
 
@@ -157,50 +186,61 @@ export const TimeOffPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Time Off & Leave Management</h1>
-          <p className="text-sm text-gray-500">
-            Submit leave requests, review HR approval workflows, track allocations & balance rules.
-          </p>
-        </div>
+      <PageHeader
+        title="Time Off & Leave Management"
+        subtitle="Submit leave requests, review HR approval workflows, track allocations & balance rules."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Time Off' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            {activeTab === 'requests' && (
+              <button
+                onClick={() => setIsRequestModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Submit Request
+              </button>
+            )}
 
-        <div className="flex items-center space-x-3">
-          {activeTab === 'requests' && (
-            <button
-              onClick={() => setIsRequestModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Submit Request
-            </button>
-          )}
+            {activeTab === 'allocations' && isHRManager && (
+              <button
+                onClick={() => setIsAllocationModalOpen(true)}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Grant Allocation
+              </button>
+            )}
 
-          {activeTab === 'allocations' && isHRManager && (
-            <button
-              onClick={() => setIsAllocationModalOpen(true)}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Grant Allocation
-            </button>
-          )}
+            {activeTab === 'types' && isHRManager && (
+              <button
+                onClick={() => {
+                  setEditingType(null);
+                  setIsTypeModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Add Leave Type
+              </button>
+            )}
+          </div>
+        }
+      />
 
-          {activeTab === 'types' && isHRManager && (
-            <button
-              onClick={() => {
-                setEditingType(null);
-                setIsTypeModalOpen(true);
-              }}
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Add Leave Type
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Time Off Module Notice"
+          message={error}
+          onRetry={activeTab === 'requests' ? fetchRequests : activeTab === 'allocations' ? fetchAllocationsAndBalances : fetchTypes}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 bg-white px-6 rounded-xl border">
-        <nav className="flex space-x-8 text-sm font-medium">
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">
+        <nav className="flex space-x-4 sm:space-x-8 text-sm font-medium whitespace-nowrap min-w-max">
           <button
             onClick={() => {
               setActiveTab('requests');
@@ -386,6 +426,16 @@ export const TimeOffPage = () => {
         onClose={() => setIsTypeModalOpen(false)}
         typeToEdit={editingType}
         onSuccess={handleSuccessToast}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmAction}
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleConfirmAction}
+        title={confirmAction?.title || 'Confirm Action'}
+        message={confirmAction?.message || 'Are you sure you want to proceed?'}
+        confirmText={confirmAction?.confirmText || 'Confirm'}
+        variant={confirmAction?.variant || 'danger'}
       />
 
       {toast.message && <Toast type={toast.type} message={toast.message} onClose={() => setToast({ message: '', type: 'success' })} />}

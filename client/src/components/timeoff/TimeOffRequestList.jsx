@@ -9,7 +9,7 @@ export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[750px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Employee</th>
@@ -21,7 +21,7 @@ export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) 
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {requests.map((req) => {
+            {requests.map((req, idx) => {
               const empName = typeof req.employee === 'object' ? req.employee?.name : 'N/A';
               const empId = typeof req.employee === 'object' ? req.employee?.employeeId : '';
               const typeName = typeof req.timeOffType === 'object' ? req.timeOffType?.name : 'N/A';
@@ -35,7 +35,7 @@ export const TimeOffRequestList = ({ requests, onApprove, onRefuse, onCancel }) 
               const isOwnRequest = typeof req.employee === 'object' ? req.employee?._id === user?.employee?._id : true;
 
               return (
-                <tr key={req._id} className="hover:bg-slate-50/80 transition">
+                <tr key={req._id || idx} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-4">
                     <div className="font-semibold text-gray-900">{empName}</div>
                     {empId && <div className="text-xs font-mono text-gray-400">{empId}</div>}

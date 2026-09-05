@@ -13,6 +13,9 @@ import { SalaryStructureFormModal } from '../components/payroll/SalaryStructureF
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import {
   DollarSign,
@@ -60,15 +63,19 @@ export const PayrollPage = () => {
   const [editingStructure, setEditingStructure] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   // Fetch Payruns
   const fetchPayruns = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await payrunApi.getAll({ page, limit: 10 });
       setPayruns(res.data || []);
       if (res.meta) setMeta(res.meta);
     } catch (err) {
+      setError(err.message || 'Failed to load payruns');
       setToast({ message: err.message || 'Failed to load payruns', type: 'error' });
     } finally {
       setLoading(false);
@@ -78,11 +85,13 @@ export const PayrollPage = () => {
   // Fetch Payslips
   const fetchPayslips = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await payslipApi.getAll({ page, limit: 10 });
       setPayslips(res.data || []);
       if (res.meta) setMeta(res.meta);
     } catch (err) {
+      setError(err.message || 'Failed to load payslips');
       setToast({ message: err.message || 'Failed to load payslips', type: 'error' });
     } finally {
       setLoading(false);
@@ -92,10 +101,12 @@ export const PayrollPage = () => {
   // Fetch Structures
   const fetchStructures = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await salaryStructureApi.getAll();
       setStructures(res.data || []);
     } catch (err) {
+      setError(err.message || 'Failed to load salary structures');
       setToast({ message: err.message || 'Failed to load salary structures', type: 'error' });
     } finally {
       setLoading(false);
@@ -110,27 +121,45 @@ export const PayrollPage = () => {
     }
   }, [activeTab, page, selectedPayrunId]);
 
-  const handleDeletePayrun = async (run) => {
-    if (window.confirm(`Are you sure you want to delete Draft payrun "${run.name}"?`)) {
-      try {
-        await payrunApi.delete(run._id);
-        setToast({ message: 'Draft payrun deleted successfully', type: 'success' });
-        fetchPayruns();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete payrun', type: 'error' });
-      }
-    }
+  const handleDeletePayrun = (run) => {
+    setConfirmDelete({
+      type: 'payrun',
+      data: run,
+      title: 'Delete Draft Payrun',
+      message: `Are you sure you want to delete Draft payrun "${run.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Payrun',
+      variant: 'danger',
+    });
   };
 
-  const handleDeleteStructure = async (s) => {
-    if (window.confirm(`Are you sure you want to delete salary structure "${s.name}"?`)) {
-      try {
-        await salaryStructureApi.delete(s._id);
-        setToast({ message: `Salary structure ${s.name} deleted`, type: 'success' });
+  const handleDeleteStructure = (s) => {
+    setConfirmDelete({
+      type: 'structure',
+      data: s,
+      title: 'Delete Salary Structure',
+      message: `Are you sure you want to delete salary structure "${s.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Structure',
+      variant: 'danger',
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      if (confirmDelete.type === 'payrun') {
+        await payrunApi.delete(confirmDelete.data._id);
+        setToast({ message: 'Draft payrun deleted successfully', type: 'success' });
+        setConfirmDelete(null);
+        fetchPayruns();
+      } else if (confirmDelete.type === 'structure') {
+        await salaryStructureApi.delete(confirmDelete.data._id);
+        setToast({ message: `Salary structure ${confirmDelete.data.name} deleted`, type: 'success' });
+        setConfirmDelete(null);
         fetchStructures();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete salary structure', type: 'error' });
       }
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to delete record', type: 'error' });
+      setConfirmDelete(null);
     }
   };
 
@@ -162,41 +191,52 @@ export const PayrollPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Payroll Management Engine</h1>
-          <p className="text-sm text-gray-500">
-            Process payruns, compute salary rules, generate payslips, and stream vector PDFs.
-          </p>
-        </div>
+      <PageHeader
+        title="Payroll Management Engine"
+        subtitle="Process payruns, compute salary rules, generate payslips, and stream vector PDFs."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Payroll' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            {activeTab === 'payruns' && isPayrollUser && (
+              <button
+                onClick={() => setIsWizardOpen(true)}
+                className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> New Payrun Wizard
+              </button>
+            )}
 
-        <div className="flex items-center space-x-3">
-          {activeTab === 'payruns' && isPayrollUser && (
-            <button
-              onClick={() => setIsWizardOpen(true)}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> New Payrun Wizard
-            </button>
-          )}
+            {activeTab === 'structures' && isHRManager && (
+              <button
+                onClick={() => {
+                  setEditingStructure(null);
+                  setIsStructureModalOpen(true);
+                }}
+                className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
+              </button>
+            )}
+          </div>
+        }
+      />
 
-          {activeTab === 'structures' && isHRManager && (
-            <button
-              onClick={() => {
-                setEditingStructure(null);
-                setIsStructureModalOpen(true);
-              }}
-              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-            >
-              <Plus className="w-4 h-4 mr-1.5" /> Add Salary Structure
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Payroll Module Notice"
+          message={error}
+          onRetry={activeTab === 'payruns' ? fetchPayruns : activeTab === 'payslips' ? fetchPayslips : fetchStructures}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200 bg-white px-6 rounded-xl border">
-        <nav className="flex space-x-8 text-sm font-medium">
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">
+        <nav className="flex space-x-4 sm:space-x-8 text-sm font-medium whitespace-nowrap min-w-max">
           <button
             onClick={() => {
               setActiveTab('payruns');
@@ -311,6 +351,7 @@ export const PayrollPage = () => {
               <PayslipList
                 payslips={payslips}
                 onViewDetails={(id) => setSelectedPayslipId(id)}
+                onError={(msg) => setToast({ message: msg, type: 'error' })}
               />
 
               {meta.totalPages > 1 && (
@@ -392,6 +433,16 @@ export const PayrollPage = () => {
         onClose={() => setIsStructureModalOpen(false)}
         structureToEdit={editingStructure}
         onSuccess={handleSuccessToast}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={confirmDelete?.title || 'Confirm Deletion'}
+        message={confirmDelete?.message || 'Are you sure you want to proceed? This action cannot be undone.'}
+        confirmText={confirmDelete?.confirmText || 'Delete'}
+        variant={confirmDelete?.variant || 'danger'}
       />
 
       {toast.message && <Toast type={toast.type} message={toast.message} onClose={() => setToast({ message: '', type: 'success' })} />}

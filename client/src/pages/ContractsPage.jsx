@@ -8,6 +8,9 @@ import { ContractDetailsModal } from '../components/contract/ContractDetailsModa
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import { Plus, FileText, Filter, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -31,6 +34,8 @@ export const ContractsPage = () => {
   const [editingContract, setEditingContract] = useState(null);
   const [selectedContract, setSelectedContract] = useState(null);
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
+  const [confirmDeleteContract, setConfirmDeleteContract] = useState(null);
 
   useEffect(() => {
     const loadLookups = async () => {
@@ -50,6 +55,7 @@ export const ContractsPage = () => {
 
   const fetchContracts = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = {
         status: statusFilter || undefined,
@@ -65,6 +71,7 @@ export const ContractsPage = () => {
         setMeta(res.meta);
       }
     } catch (err) {
+      setError(err.message || 'Failed to fetch contracts');
       setToast({ message: err.message || 'Failed to fetch contracts', type: 'error' });
     } finally {
       setLoading(false);
@@ -85,15 +92,20 @@ export const ContractsPage = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (ctr) => {
-    if (window.confirm(`Are you sure you want to delete contract ${ctr.contractNumber}?`)) {
-      try {
-        await contractApi.delete(ctr._id);
-        setToast({ message: `Contract ${ctr.contractNumber} deleted`, type: 'success' });
-        fetchContracts();
-      } catch (err) {
-        setToast({ message: err.message || 'Failed to delete contract', type: 'error' });
-      }
+  const handleDelete = (ctr) => {
+    setConfirmDeleteContract(ctr);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDeleteContract) return;
+    try {
+      await contractApi.delete(confirmDeleteContract._id);
+      setToast({ message: `Contract ${confirmDeleteContract.contractNumber} deleted`, type: 'success' });
+      setConfirmDeleteContract(null);
+      fetchContracts();
+    } catch (err) {
+      setToast({ message: err.message || 'Failed to delete contract', type: 'error' });
+      setConfirmDeleteContract(null);
     }
   };
 
@@ -105,23 +117,34 @@ export const ContractsPage = () => {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Contract Management</h1>
-          <p className="text-sm text-gray-500">
-            Manage wage structures, salary breakdown components, and period-specific active contracts.
-          </p>
-        </div>
+      <PageHeader
+        title="Contract Management"
+        subtitle="Manage wage structures, salary breakdown components, and period-specific active contracts."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Contracts' },
+        ]}
+        actions={
+          isHRManager && (
+            <button
+              onClick={handleCreateNew}
+              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
+            >
+              <Plus className="w-4 h-4 mr-1.5" /> Create Contract
+            </button>
+          )
+        }
+      />
 
-        {isHRManager && (
-          <button
-            onClick={handleCreateNew}
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl shadow-md shadow-brand-600/20 transition"
-          >
-            <Plus className="w-4 h-4 mr-1.5" /> Create Contract
-          </button>
-        )}
-      </div>
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Failed to Load Contracts"
+          message={error}
+          onRetry={fetchContracts}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-3">
@@ -255,6 +278,16 @@ export const ContractsPage = () => {
         isOpen={!!selectedContract}
         onClose={() => setSelectedContract(null)}
         contract={selectedContract}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmDeleteContract}
+        onClose={() => setConfirmDeleteContract(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Contract"
+        message={`Are you sure you want to delete contract "${confirmDeleteContract?.contractNumber}"? This action cannot be undone.`}
+        confirmText="Delete Contract"
+        variant="danger"
       />
 
       {toast.message && <Toast type={toast.type} message={toast.message} onClose={() => setToast({ message: '', type: 'success' })} />}

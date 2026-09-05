@@ -59,9 +59,9 @@ export const EmployeeKanban = ({ employees, departments, onSelectEmployee, onEdi
       </div>
 
       {/* Board Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <div className="flex lg:grid lg:grid-cols-4 gap-4 items-start overflow-x-auto pb-4 snap-x">
         {Object.entries(groups).map(([groupName, groupEmployees]) => (
-          <div key={groupName} className="bg-slate-100/70 p-4 rounded-2xl border border-slate-200 space-y-3 min-h-[350px]">
+          <div key={groupName} className="min-w-[280px] sm:min-w-[300px] lg:min-w-0 flex-1 snap-start bg-slate-100/70 p-4 rounded-2xl border border-slate-200 space-y-3 min-h-[350px]">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h4 className="font-bold text-gray-800 text-sm">{groupName}</h4>
               <span className="text-xs font-semibold px-2 py-0.5 bg-white text-gray-600 rounded-full shadow-sm">
@@ -70,12 +70,12 @@ export const EmployeeKanban = ({ employees, departments, onSelectEmployee, onEdi
             </div>
 
             <div className="space-y-3">
-              {groupEmployees.map((emp) => {
+              {groupEmployees.map((emp, empIdx) => {
                 const posName = typeof emp.jobPosition === 'object' ? emp.jobPosition?.name : emp.jobPosition;
 
                 return (
                   <div
-                    key={emp._id}
+                    key={emp._id || empIdx}
                     className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition space-y-3"
                   >
                     <div className="flex items-start justify-between">
