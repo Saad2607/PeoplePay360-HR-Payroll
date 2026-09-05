@@ -9,6 +9,7 @@ const TimeOffType = require('./TimeOffType');
 const Allocation = require('./Allocation');
 const TimeOffRequest = require('./TimeOffRequest');
 const SalaryStructure = require('./SalaryStructure');
+const SalaryRule = require('./SalaryRule');
 
 module.exports = {
   User,
@@ -22,5 +23,6 @@ module.exports = {
   Allocation,
   LeaveAllocation: Allocation,
   TimeOffRequest,
-  SalaryStructure
+  SalaryStructure,
+  SalaryRule
 };
