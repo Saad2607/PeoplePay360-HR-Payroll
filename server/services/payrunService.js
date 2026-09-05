@@ -5,6 +5,7 @@ const SalaryStructure = require('../models/SalaryStructure');
 const Payslip = require('../models/Payslip');
 const payrollService = require('./payrollService');
 const payrollValidatorService = require('./payrollValidatorService');
+const emailService = require('./emailService');
 
 /**
  * Step 2 of Payrun Wizard: Filter eligible employees for a given salary structure and period.
@@ -497,6 +498,56 @@ const markPaid = async (payrunId, paymentData = {}, user) => {
     .populate('payment.paidBy', 'name email');
 };
 
+/**
+ * Bulk send payslips to employees via email with generated PDF attachments.
+ * Gracefully logs delivery statuses and tracks email status on payslips.
+ */
+const sendPayslips = async (payrunId, user) => {
+  const payrun = await Payrun.findById(payrunId);
+  if (!payrun) {
+    const error = new Error('Payrun not found.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (payrun.status === 'Draft') {
+    const error = new Error('Payrun must be computed and validated before sending payslips.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Fetch all payslips populated with employee, department, jobPosition, contract, and payrun
+  const payslips = await Payslip.find({ payrun: payrun._id })
+    .populate({
+      path: 'employee',
+      populate: [
+        { path: 'department', select: 'name code' },
+        { path: 'jobPosition', select: 'name' }
+      ]
+    })
+    .populate('contract')
+    .populate('salaryStructure')
+    .populate('payrun');
+
+  if (!payslips || payslips.length === 0) {
+    const error = new Error('No payslips found for this payrun to send.');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const deliveryReport = await emailService.sendBulkPayslips(payslips, { attachPdf: true });
+
+  return {
+    payrun: {
+      _id: payrun._id,
+      name: payrun.name,
+      status: payrun.status,
+      period: payrun.period
+    },
+    ...deliveryReport
+  };
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
@@ -507,6 +558,8 @@ module.exports = {
   validatePayrun,
   checkPayrunValidation,
   markPaid,
+  sendPayslips,
   getPayslips,
   getPayslipById
 };
+

@@ -142,6 +142,20 @@ const markPaid = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   POST /api/payruns/:id/send-payslips
+ * @desc    Bulk send payslips to employees via email with generated PDF attachments
+ * @access  Private (Admin, HR)
+ */
+const sendPayslips = async (req, res, next) => {
+  try {
+    const result = await payrunService.sendPayslips(req.params.id, req.user);
+    return successResponse(res, result, 'Bulk payslip email dispatch completed');
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getEligibleEmployees,
   createPayrun,
@@ -151,6 +165,8 @@ module.exports = {
   computePayrun,
   validatePayrun,
   checkValidation,
-  markPaid
+  markPaid,
+  sendPayslips
 };
+
 

@@ -70,6 +70,12 @@ router.post(
   payrunController.markPaid
 );
 
+router.post(
+  '/:id/send-payslips',
+  authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
+  payrunController.sendPayslips
+);
+
 router.delete(
   '/:id',
   authorize(...(HR_MANAGERS || ['Admin', 'HR Manager', 'HR'])),
