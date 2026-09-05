@@ -70,12 +70,12 @@ export const EmployeeKanban = ({ employees, departments, onSelectEmployee, onEdi
             </div>
 
             <div className="space-y-3">
-              {groupEmployees.map((emp) => {
+              {groupEmployees.map((emp, empIdx) => {
                 const posName = typeof emp.jobPosition === 'object' ? emp.jobPosition?.name : emp.jobPosition;
 
                 return (
                   <div
-                    key={emp._id}
+                    key={emp._id || empIdx}
                     className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition space-y-3"
                   >
                     <div className="flex items-start justify-between">

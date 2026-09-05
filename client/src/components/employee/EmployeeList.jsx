@@ -22,12 +22,12 @@ export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDe
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {employees.map((emp) => {
+            {employees.map((emp, idx) => {
               const deptName = typeof emp.department === 'object' ? emp.department?.name : emp.department;
               const posName = typeof emp.jobPosition === 'object' ? emp.jobPosition?.name : emp.jobPosition;
 
               return (
-                <tr key={emp._id} className="hover:bg-slate-50/80 transition group">
+                <tr key={emp._id || emp.employeeId || idx} className="hover:bg-slate-50/80 transition group">
                   <td className="py-3.5 px-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 text-white font-bold flex items-center justify-center shadow-sm">

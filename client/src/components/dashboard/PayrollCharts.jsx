@@ -71,7 +71,7 @@ export const PayrollCharts = ({ charts = {}, loading = false }) => {
             </div>
 
             <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200">
-              Total: ?{Number(totalCompanySalary).toLocaleString('en-IN')}
+              Total: ₹{Number(totalCompanySalary).toLocaleString('en-IN')}
             </span>
           </div>
 
@@ -110,7 +110,7 @@ export const PayrollCharts = ({ charts = {}, loading = false }) => {
 
                       <div className="flex items-center space-x-2 text-right">
                         <span className="text-gray-900 font-mono font-bold">
-                          ?{Number(dept.totalSalary).toLocaleString('en-IN')}
+                          ₹{Number(dept.totalSalary).toLocaleString('en-IN')}
                         </span>
                         <span className="text-gray-400 text-[11px] font-normal w-8 text-right">
                           {percentage}%
@@ -194,10 +194,10 @@ export const PayrollCharts = ({ charts = {}, loading = false }) => {
                       <div className="absolute -top-14 z-20 bg-slate-900 text-white text-[11px] rounded-xl py-1.5 px-3 shadow-xl whitespace-nowrap pointer-events-none transform -translate-y-1">
                         <p className="font-bold text-slate-200">{trend.label}</p>
                         <p className="text-emerald-400 font-mono font-semibold">
-                          Net: ?{Number(trend.netSalary).toLocaleString('en-IN')}
+                          Net: ₹{Number(trend.netSalary).toLocaleString('en-IN')}
                         </p>
                         <p className="text-slate-400 font-mono text-[10px]">
-                          Gross: ?{Number(trend.grossSalary).toLocaleString('en-IN')} ({trend.payslipCount} slips)
+                          Gross: ₹{Number(trend.grossSalary).toLocaleString('en-IN')} ({trend.payslipCount} slips)
                         </p>
                       </div>
                     )}
@@ -240,7 +240,7 @@ export const PayrollCharts = ({ charts = {}, loading = false }) => {
 
         <div className="mt-6 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
           <span>Values calculated from live MongoDB payslip records</span>
-          <span className="font-mono text-gray-600">Peak: ?{Number(maxTrendSalary).toLocaleString('en-IN')}</span>
+          <span className="font-mono text-gray-600">Peak: ₹{Number(maxTrendSalary).toLocaleString('en-IN')}</span>
         </div>
       </div>
     </div>

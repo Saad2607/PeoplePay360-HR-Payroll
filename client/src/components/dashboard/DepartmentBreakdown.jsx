@@ -68,7 +68,7 @@ export const DepartmentBreakdown = ({ departments = [], loading = false }) => {
       render: (row) => (
         <div>
           <div className="font-mono text-xs sm:text-sm font-extrabold text-gray-900">
-            ?{Number(row.totalSalaryExpenditure).toLocaleString('en-IN')}
+            ₹{Number(row.totalSalaryExpenditure).toLocaleString('en-IN')}
           </div>
           {totalCompanyExpenditure > 0 && (
             <div className="text-[10px] text-gray-400">
@@ -84,7 +84,7 @@ export const DepartmentBreakdown = ({ departments = [], loading = false }) => {
       align: 'right',
       render: (row) => (
         <span className="font-mono text-xs font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-lg">
-          ?{Number(row.avgSalary).toLocaleString('en-IN')}
+          ₹{Number(row.avgSalary).toLocaleString('en-IN')}
         </span>
       ),
     },
@@ -108,7 +108,7 @@ export const DepartmentBreakdown = ({ departments = [], loading = false }) => {
             {totalHeadcount} Total Staff
           </span>
           <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-bold font-mono">
-            ?{Number(totalCompanyExpenditure).toLocaleString('en-IN')} Total Cost
+            ₹{Number(totalCompanyExpenditure).toLocaleString('en-IN')} Total Cost
           </span>
         </div>
       </div>

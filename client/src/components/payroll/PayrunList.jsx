@@ -22,13 +22,13 @@ export const PayrunList = ({ payruns, onSelectPayrun, onDeletePayrun }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {payruns.map((run) => {
+            {payruns.map((run, idx) => {
               const structName = typeof run.salaryStructure === 'object' ? run.salaryStructure?.name : 'Standard Structure';
               const empCount = run.selectedEmployees?.length || run.payslips?.length || 0;
               const totalNet = run.totalNetSalary || run.summary?.totalNetSalary || 0;
 
               return (
-                <tr key={run._id} className="hover:bg-slate-50/80 transition">
+                <tr key={run._id || idx} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-4 font-bold text-gray-900">
                     <span
                       onClick={() => onSelectPayrun(run)}

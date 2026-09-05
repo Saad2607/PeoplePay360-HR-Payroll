@@ -23,7 +23,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {contracts.map((ctr) => {
+            {contracts.map((ctr, idx) => {
               const empName = typeof ctr.employee === 'object' ? ctr.employee?.name : 'N/A';
               const empId = typeof ctr.employee === 'object' ? ctr.employee?.employeeId : '';
               const deptName = typeof ctr.department === 'object' ? ctr.department?.name : 'N/A';
@@ -32,7 +32,7 @@ export const ContractList = ({ contracts, onSelectContract, onEditContract, onDe
 
               return (
                 <tr
-                  key={ctr._id}
+                  key={ctr._id || ctr.contractNumber || idx}
                   className={`hover:bg-slate-50/80 transition ${
                     isActive ? 'bg-emerald-50/30' : ''
                   }`}

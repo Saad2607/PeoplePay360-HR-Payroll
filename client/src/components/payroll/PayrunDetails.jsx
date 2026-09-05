@@ -313,12 +313,12 @@ export const PayrunDetails = ({ payrunId, onBack, onViewPayslip }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {payslipsList.map((ps) => {
+              {payslipsList.map((ps, idx) => {
                 const empName = typeof ps.employee === 'object' ? ps.employee?.name : 'N/A';
                 const empId = typeof ps.employee === 'object' ? ps.employee?.employeeId : '';
 
                 return (
-                  <tr key={ps._id} className="hover:bg-slate-50/80 transition">
+                  <tr key={ps._id || idx} className="hover:bg-slate-50/80 transition">
                     <td className="py-3 px-4 font-mono font-bold text-gray-900">
                       {ps.payslipNumber || ps._id.slice(-6)}
                     </td>

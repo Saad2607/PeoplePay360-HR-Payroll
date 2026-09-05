@@ -23,7 +23,7 @@ export const AttendanceList = ({ attendanceRecords, onManualCorrection }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {attendanceRecords.map((rec) => {
+            {attendanceRecords.map((rec, idx) => {
               const empName = typeof rec.employee === 'object' ? rec.employee?.name : 'N/A';
               const empId = typeof rec.employee === 'object' ? rec.employee?.employeeId : '';
               const isMissingCheckout = rec.missingCheckout || (rec.checkIn && !rec.checkOut && rec.status !== 'On Leave');
@@ -31,7 +31,7 @@ export const AttendanceList = ({ attendanceRecords, onManualCorrection }) => {
 
               return (
                 <tr
-                  key={rec._id}
+                  key={rec._id || idx}
                   className={`hover:bg-slate-50/80 transition ${
                     isMissingCheckout ? 'bg-amber-50/40' : ''
                   }`}

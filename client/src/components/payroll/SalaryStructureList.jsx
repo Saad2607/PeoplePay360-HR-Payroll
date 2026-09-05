@@ -21,8 +21,8 @@ export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStruc
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {structures.map((s) => (
-              <tr key={s._id} className="hover:bg-slate-50/80 transition">
+            {structures.map((s, idx) => (
+              <tr key={s._id || s.code || idx} className="hover:bg-slate-50/80 transition">
                 <td className="py-3.5 px-4">
                   <div className="font-bold text-gray-900">{s.name}</div>
                   <span className="text-xs font-mono font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded">
