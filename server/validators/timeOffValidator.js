@@ -67,7 +67,91 @@ const updateTimeOffTypeValidator = [
     .isBoolean()
 ];
 
+// Allocation Validators
+const createAllocationValidator = [
+  body('employee')
+    .notEmpty()
+    .withMessage('Employee ID is required')
+    .isMongoId()
+    .withMessage('employee must be a valid MongoDB ObjectId'),
+  body('timeOffType')
+    .notEmpty()
+    .withMessage('Time off type ID is required')
+    .isMongoId()
+    .withMessage('timeOffType must be a valid MongoDB ObjectId'),
+  body('allocatedAmount')
+    .notEmpty()
+    .withMessage('Allocated amount is required')
+    .isFloat({ min: 0 })
+    .withMessage('Allocated amount must be a positive number'),
+  body('validityPeriod.startDate')
+    .notEmpty()
+    .withMessage('Validity period start date is required')
+    .isISO8601()
+    .withMessage('startDate must be a valid ISO8601 date'),
+  body('validityPeriod.endDate')
+    .notEmpty()
+    .withMessage('Validity period end date is required')
+    .isISO8601()
+    .withMessage('endDate must be a valid ISO8601 date'),
+  body('status')
+    .optional()
+    .isIn(['Draft', 'Pending', 'Approved', 'Refused', 'Cancelled'])
+    .withMessage('Invalid allocation status'),
+  body('notes')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+];
+
+const updateAllocationValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('Allocation ID must be a valid MongoDB ObjectId'),
+  body('allocatedAmount')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Allocated amount must be a positive number'),
+  body('takenAmount')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Taken amount must be a positive number'),
+  body('validityPeriod.startDate')
+    .optional()
+    .isISO8601(),
+  body('validityPeriod.endDate')
+    .optional()
+    .isISO8601(),
+  body('status')
+    .optional()
+    .isIn(['Draft', 'Pending', 'Approved', 'Refused', 'Cancelled']),
+  body('notes')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+];
+
+const allocationQueryValidator = [
+  query('employee')
+    .optional()
+    .isMongoId()
+    .withMessage('employee must be a valid MongoDB ObjectId'),
+  query('timeOffType')
+    .optional()
+    .isMongoId()
+    .withMessage('timeOffType must be a valid MongoDB ObjectId'),
+  query('status')
+    .optional()
+    .isIn(['Draft', 'Pending', 'Approved', 'Refused', 'Cancelled'])
+    .withMessage('Invalid status filter')
+];
+
 module.exports = {
   createTimeOffTypeValidator,
-  updateTimeOffTypeValidator
+  updateTimeOffTypeValidator,
+  createAllocationValidator,
+  updateAllocationValidator,
+  allocationQueryValidator
 };

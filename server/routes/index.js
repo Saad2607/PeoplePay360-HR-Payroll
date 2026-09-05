@@ -11,6 +11,7 @@ const contractRoutes = require('./contractRoutes');
 const scheduleRoutes = require('./scheduleRoutes');
 const attendanceRoutes = require('./attendanceRoutes');
 const timeOffTypeRoutes = require('./timeOffTypeRoutes');
+const allocationRoutes = require('./allocationRoutes');
 
 // API Health Check
 router.get('/health', (req, res) => {
@@ -36,5 +37,6 @@ router.use('/contracts', contractRoutes);
 router.use('/schedules', scheduleRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/time-off-types', timeOffTypeRoutes);
+router.use('/allocations', allocationRoutes);
 
 module.exports = router;

@@ -6,6 +6,7 @@ const Contract = require('./Contract');
 const WorkingSchedule = require('./WorkingSchedule');
 const Attendance = require('./Attendance');
 const TimeOffType = require('./TimeOffType');
+const Allocation = require('./Allocation');
 
 module.exports = {
   User,
@@ -15,5 +16,7 @@ module.exports = {
   Contract,
   WorkingSchedule,
   Attendance,
-  TimeOffType
+  TimeOffType,
+  Allocation,
+  LeaveAllocation: Allocation
 };
