@@ -148,10 +148,80 @@ const allocationQueryValidator = [
     .withMessage('Invalid status filter')
 ];
 
+// Time Off Request Validators
+const createTimeOffRequestValidator = [
+  body('employeeId')
+    .optional()
+    .isMongoId()
+    .withMessage('employeeId must be a valid MongoDB ObjectId'),
+  body('timeOffTypeId')
+    .notEmpty()
+    .withMessage('Time off type ID is required')
+    .isMongoId()
+    .withMessage('timeOffTypeId must be a valid MongoDB ObjectId'),
+  body('startDate')
+    .notEmpty()
+    .withMessage('Start date is required')
+    .isISO8601()
+    .withMessage('startDate must be a valid ISO8601 date'),
+  body('endDate')
+    .notEmpty()
+    .withMessage('End date is required')
+    .isISO8601()
+    .withMessage('endDate must be a valid ISO8601 date'),
+  body('duration')
+    .optional()
+    .isFloat({ min: 0.5 })
+    .withMessage('Duration must be at least 0.5'),
+  body('reason')
+    .notEmpty()
+    .withMessage('Reason is required')
+    .isString()
+    .trim()
+    .isLength({ min: 3, max: 500 })
+    .withMessage('Reason must be between 3 and 500 characters')
+];
+
+const refuseTimeOffRequestValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('Time Off Request ID must be a valid MongoDB ObjectId'),
+  body('refusalReason')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Refusal reason cannot exceed 500 characters')
+];
+
+const timeOffRequestQueryValidator = [
+  query('employee')
+    .optional()
+    .isMongoId()
+    .withMessage('employee must be a valid MongoDB ObjectId'),
+  query('timeOffType')
+    .optional()
+    .isMongoId()
+    .withMessage('timeOffType must be a valid MongoDB ObjectId'),
+  query('status')
+    .optional()
+    .isIn(['Pending', 'Approved', 'Refused', 'Cancelled'])
+    .withMessage('Invalid status filter'),
+  query('startDate')
+    .optional()
+    .isISO8601(),
+  query('endDate')
+    .optional()
+    .isISO8601()
+];
+
 module.exports = {
   createTimeOffTypeValidator,
   updateTimeOffTypeValidator,
   createAllocationValidator,
   updateAllocationValidator,
-  allocationQueryValidator
+  allocationQueryValidator,
+  createTimeOffRequestValidator,
+  refuseTimeOffRequestValidator,
+  timeOffRequestQueryValidator
 };

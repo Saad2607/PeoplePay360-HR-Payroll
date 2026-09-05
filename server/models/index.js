@@ -7,6 +7,7 @@ const WorkingSchedule = require('./WorkingSchedule');
 const Attendance = require('./Attendance');
 const TimeOffType = require('./TimeOffType');
 const Allocation = require('./Allocation');
+const TimeOffRequest = require('./TimeOffRequest');
 
 module.exports = {
   User,
@@ -18,5 +19,6 @@ module.exports = {
   Attendance,
   TimeOffType,
   Allocation,
-  LeaveAllocation: Allocation
+  LeaveAllocation: Allocation,
+  TimeOffRequest
 };
