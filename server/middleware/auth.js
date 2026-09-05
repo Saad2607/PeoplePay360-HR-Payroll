@@ -1,6 +1,7 @@
 const { verifyToken } = require('../utils/jwt');
 const { errorResponse } = require('../utils/apiResponse');
 const User = require('../models/User');
+const { ROLES, HR_MANAGERS } = require('../config/roles');
 
 /**
  * Authentication Middleware
@@ -48,12 +49,17 @@ const authenticate = async (req, res, next) => {
 
 /**
  * Role-based Authorization Middleware (Protected route middleware)
- * @param  {...string} allowedRoles - e.g. ('Admin', 'HR', 'Manager')
+ * @param  {...string} allowedRoles - e.g. (ROLES.HR_MANAGER, ROLES.ADMIN)
  */
 const authorize = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user) {
       return errorResponse(res, 'Authentication required before authorization check.', 401);
+    }
+
+    // Admin always has full access
+    if (req.user.role === ROLES.ADMIN) {
+      return next();
     }
 
     if (!allowedRoles.includes(req.user.role)) {
@@ -68,7 +74,42 @@ const authorize = (...allowedRoles) => {
   };
 };
 
+/**
+ * Self-or-Privileged Authorization Middleware
+ * Allows an Employee to access their own resource, while privileged roles (e.g. HR Manager, Admin)
+ * can access any employee resource.
+ * @param {Function} getTargetEmployeeId - Function taking (req) and returning the target employeeId string
+ * @param {Array<string>} [privilegedRoles] - Roles allowed to bypass self-check
+ */
+const authorizeSelfOrRoles = (getTargetEmployeeId, privilegedRoles = HR_MANAGERS) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return errorResponse(res, 'Authentication required.', 401);
+    }
+
+    // If user is Admin or has one of the privileged roles, allow
+    if (req.user.role === ROLES.ADMIN || privilegedRoles.includes(req.user.role)) {
+      return next();
+    }
+
+    // If user is Employee, check if the resource belongs to them
+    const targetEmployeeId = getTargetEmployeeId(req);
+    const userEmployeeId = req.user.employee?._id?.toString() || req.user.employee?.toString();
+
+    if (userEmployeeId && targetEmployeeId && userEmployeeId === targetEmployeeId.toString()) {
+      return next();
+    }
+
+    return errorResponse(
+      res,
+      'Forbidden: Employees can only view or manage their own records.',
+      403
+    );
+  };
+};
+
 module.exports = {
   authenticate,
-  authorize
+  authorize,
+  authorizeSelfOrRoles
 };

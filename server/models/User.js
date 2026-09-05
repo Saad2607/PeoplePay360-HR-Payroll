@@ -29,8 +29,14 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['Admin', 'HR', 'Manager', 'Employee'],
-        message: '{VALUE} is not a valid role. Allowed roles: Admin, HR, Manager, Employee'
+        values: [
+          'Employee',
+          'HR Manager',
+          'HR Payroll User',
+          'HR Payroll Manager',
+          'Admin'
+        ],
+        message: '{VALUE} is not a valid role. Allowed roles: Employee, HR Manager, HR Payroll User, HR Payroll Manager, Admin'
       },
       default: 'Employee'
     },

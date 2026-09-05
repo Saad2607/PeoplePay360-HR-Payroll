@@ -7,7 +7,11 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node seed/seed.js",
+<<<<<<< HEAD
     "test": "node tests/hr-modules.test.js && node tests/payroll-engine.test.js"
+=======
+    "test": "node test/test-runner.js"
+>>>>>>> origin/feature/saad-backend
   },
   "keywords": [
     "hr",

@@ -99,6 +99,27 @@ employeeSchema.virtual('directReports', {
   foreignField: 'manager'
 });
 
+// Virtual for attendance records
+employeeSchema.virtual('attendances', {
+  ref: 'Attendance',
+  localField: '_id',
+  foreignField: 'employee'
+});
+
+// Virtual for Time Off / Leave requests
+employeeSchema.virtual('timeOffRequests', {
+  ref: 'TimeOff',
+  localField: '_id',
+  foreignField: 'employee'
+});
+
+// Virtual for Leave / Benefit Allocations
+employeeSchema.virtual('allocations', {
+  ref: 'LeaveAllocation',
+  localField: '_id',
+  foreignField: 'employee'
+});
+
 const Employee = mongoose.model('Employee', employeeSchema);
 
 module.exports = Employee;
