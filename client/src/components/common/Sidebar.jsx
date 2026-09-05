@@ -1,87 +1,215 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Users, FileText, LayoutDashboard, Calendar, Clock, DollarSign } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  Users,
+  FileText,
+  LayoutDashboard,
+  Calendar,
+  Clock,
+  DollarSign,
+  BarChart3,
+  Layers,
+  Sliders,
+  UserCheck,
+  LogOut,
+  ShieldCheck
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { StatusBadge } from './StatusBadge';
 
-export const Sidebar = () => {
-  const { isHRManager } = useAuth();
+/**
+ * Sidebar - Role-based enterprise sidebar navigation.
+ * Dynamically adjusts visible modules based on user role (Admin, HR Manager,
+ * HR Payroll User, HR Payroll Manager, Employee).
+ *
+ * @param {Object} props
+ * @param {Function} [props.onNavigate] - Callback when any navigation link is clicked (e.g. to close mobile drawer)
+ * @param {Function} [props.onLogoutClick] - Callback to prompt global logout confirmation
+ * @param {string} [props.className=''] - Additional container classes
+ */
+export const Sidebar = ({ onNavigate, onLogoutClick, className = '' }) => {
+  const { user } = useAuth();
+  const location = useLocation();
 
-  const navItems = [
-    { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Employees', path: '/employees', icon: Users },
-    { label: 'Contracts', path: '/contracts', icon: FileText },
-    { label: 'Attendance', path: '/attendance', icon: Clock },
-    { label: 'Time Off & Leaves', path: '/timeoff', icon: Calendar },
-    { label: 'Payroll & Payruns', path: '/payroll', icon: DollarSign },
-  ];
+  const userRole = user?.role || 'Employee';
 
-  const integrationItems = [
-    { label: 'Attendance', path: '/employees?tab=attendance', icon: Clock, note: 'Krish Module' },
-    { label: 'Time Off & Leaves', path: '/employees?tab=timeoff', icon: Calendar, note: 'Krish Module' },
-    { label: 'Payruns & Payroll', path: '/contracts', icon: DollarSign, note: 'Engine Connected' },
-  ];
+  // Navigation definitions based on specification
+  const getNavSections = (role) => {
+    switch (role) {
+      case 'Admin':
+        return [
+          {
+            title: 'Core Management',
+            items: [
+              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Employees', path: '/employees', icon: Users },
+              { label: 'Contracts', path: '/contracts', icon: FileText },
+              { label: 'Attendance', path: '/attendance', icon: Clock },
+              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+            ],
+          },
+          {
+            title: 'Payroll & Analytics',
+            items: [
+              { label: 'Payroll', path: '/payroll', icon: DollarSign },
+              { label: 'Reports', path: '/reports', icon: BarChart3 },
+            ],
+          },
+        ];
+
+      case 'HR Manager':
+        return [
+          {
+            title: 'People & Operations',
+            items: [
+              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Employees', path: '/employees', icon: Users },
+              { label: 'Contracts', path: '/contracts', icon: FileText },
+              { label: 'Attendance', path: '/attendance', icon: Clock },
+              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+            ],
+          },
+        ];
+
+      case 'HR Payroll User':
+        return [
+          {
+            title: 'Payroll Operations',
+            items: [
+              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Payroll', path: '/payroll', icon: DollarSign },
+              { label: 'Payslips', path: '/payroll?tab=payslips', icon: FileText },
+              { label: 'Reports', path: '/reports', icon: BarChart3 },
+            ],
+          },
+        ];
+
+      case 'HR Payroll Manager':
+        return [
+          {
+            title: 'Compensation & Rules',
+            items: [
+              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Salary Structures', path: '/payroll?tab=structures', icon: Layers },
+              { label: 'Salary Rules', path: '/payroll?tab=structures', icon: Sliders },
+              { label: 'Payroll', path: '/payroll', icon: DollarSign },
+            ],
+          },
+        ];
+
+      case 'Employee':
+      default:
+        return [
+          {
+            title: 'Self-Service Portal',
+            items: [
+              { label: 'Dashboard', path: '/', icon: LayoutDashboard },
+              { label: 'Own Employee Details', path: '/employees', icon: UserCheck },
+              { label: 'Attendance', path: '/attendance', icon: Clock },
+              { label: 'Time Off', path: '/timeoff', icon: Calendar },
+            ],
+          },
+        ];
+    }
+  };
+
+  const sections = getNavSections(userRole);
+
+  /**
+   * Determine whether a link is currently active, taking query params into account.
+   */
+  const isItemActive = (path) => {
+    const [itemPath, itemQuery] = path.split('?');
+    if (location.pathname !== itemPath) return false;
+
+    if (!itemQuery) {
+      if (
+        location.search &&
+        (location.search.includes('tab=payslips') || location.search.includes('tab=structures'))
+      ) {
+        return false;
+      }
+      return true;
+    }
+
+    return location.search.includes(itemQuery);
+  };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-[calc(100vh-57px)] flex flex-col justify-between p-4">
-      <div className="space-y-6">
-        <div>
-          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Main Management
-          </p>
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-700 font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }`
-                  }
-                >
-                  <Icon className="w-5 h-5 mr-3 text-current" />
-                  {item.label}
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
+    <aside
+      className={`w-64 bg-white border-r border-gray-200 h-full min-h-[calc(100vh-57px)] flex flex-col justify-between p-4 ${className}`}
+    >
+      <div className="space-y-6 overflow-y-auto pr-1">
+        {sections.map((section, sIdx) => (
+          <div key={sIdx}>
+            <p className="px-3 text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 select-none">
+              {section.title}
+            </p>
+            <nav className="space-y-1">
+              {section.items.map((item, idx) => {
+                const Icon = item.icon;
+                const active = isItemActive(item.path);
 
-        <div>
-          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Payroll & HR Modules
-          </p>
-          <nav className="space-y-1">
-            {integrationItems.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={idx}
-                  to={item.path}
-                  className="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 transition group"
-                >
-                  <div className="flex items-center">
-                    <Icon className="w-5 h-5 mr-3 text-gray-400 group-hover:text-brand-600" />
-                    <span>{item.label}</span>
-                  </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-mono">
-                    {item.note}
-                  </span>
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
+                return (
+                  <Link
+                    key={`${item.path}-${idx}`}
+                    to={item.path}
+                    onClick={() => onNavigate && onNavigate()}
+                    className={`flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-xl transition duration-150 ${
+                      active
+                        ? 'bg-brand-50 text-brand-700 font-semibold shadow-2xs'
+                        : 'text-gray-600 hover:bg-slate-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center truncate">
+                      <Icon
+                        className={`w-5 h-5 mr-3 flex-shrink-0 ${
+                          active ? 'text-brand-600' : 'text-gray-400 group-hover:text-gray-600'
+                        }`}
+                      />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+
+                    {active && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-600 flex-shrink-0" />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        ))}
       </div>
 
-      {/* Role badge footer */}
-      <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-        <span className="font-semibold text-slate-700 block mb-0.5">Frontend Integration Role</span>
-        <span className="text-slate-500">Jay (Employee & Contract Lead)</span>
+      {/* Role Profile & Session Card */}
+      <div className="pt-4 mt-auto border-t border-gray-100 space-y-3">
+        <div className="p-3 bg-slate-50/80 rounded-2xl border border-slate-100 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-gray-900 truncate">
+              {user?.name || 'Authorized User'}
+            </p>
+            <div className="mt-1">
+              <StatusBadge status={userRole} size="sm" />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onLogoutClick}
+            aria-label="Sign out"
+            title="Sign out of PeoplePay360"
+            className="p-2 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="px-3 flex items-center justify-between text-[11px] text-gray-400">
+          <span className="flex items-center">
+            <ShieldCheck className="w-3 h-3 mr-1 text-emerald-500" /> Secure Session
+          </span>
+          <span className="font-mono">v1.0</span>
+        </div>
       </div>
     </aside>
   );

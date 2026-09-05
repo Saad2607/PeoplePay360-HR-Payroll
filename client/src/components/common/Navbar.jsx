@@ -9,7 +9,10 @@ import {
   ChevronDown,
   Layers,
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  Clock,
+  DollarSign,
+  BarChart3
 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { Link } from 'react-router-dom';
@@ -123,22 +126,49 @@ export const Navbar = ({
 
                 {/* Quick module links */}
                 <div className="py-1">
-                  <Link
-                    to="/employees"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
-                  >
-                    <User className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
-                    My Employee Profile
-                  </Link>
-                  <Link
-                    to="/attendance"
-                    onClick={() => setIsProfileOpen(false)}
-                    className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
-                    Attendance & Hours
-                  </Link>
+                  {(user?.role === 'Admin' || user?.role === 'HR Manager' || user?.role === 'Employee' || !user?.role) && (
+                    <Link
+                      to="/employees"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
+                    >
+                      <User className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
+                      {user?.role === 'Employee' ? 'My Employee Profile' : 'Employees Directory'}
+                    </Link>
+                  )}
+
+                  {(user?.role === 'Admin' || user?.role === 'HR Manager' || user?.role === 'Employee' || !user?.role) && (
+                    <Link
+                      to="/attendance"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
+                    >
+                      <Clock className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
+                      Attendance & Hours
+                    </Link>
+                  )}
+
+                  {(user?.role === 'Admin' || user?.role === 'HR Payroll User' || user?.role === 'HR Payroll Manager') && (
+                    <Link
+                      to="/payroll"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
+                    >
+                      <DollarSign className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
+                      Payroll Engine
+                    </Link>
+                  )}
+
+                  {(user?.role === 'Admin' || user?.role === 'HR Payroll User') && (
+                    <Link
+                      to="/reports"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-600 transition"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 mr-2.5 text-gray-400" />
+                      Audit Reports
+                    </Link>
+                  )}
                 </div>
 
                 {/* Sign out */}
