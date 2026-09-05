@@ -1,4 +1,5 @@
 const payrunService = require('../services/payrunService');
+const pdfService = require('../services/pdfService');
 const { successResponse, paginatedResponse } = require('../utils/apiResponse');
 
 /**
@@ -29,7 +30,30 @@ const getPayslipById = async (req, res, next) => {
   }
 };
 
+/**
+ * @route   GET /api/payslips/:id/pdf
+ * @desc    Generate and stream high-quality printable vector PDF payslip
+ * @access  Private (Employee for own payslip; HR/Admin for all)
+ */
+const downloadPayslipPdf = async (req, res, next) => {
+  try {
+    const payslip = await payrunService.getPayslipById(req.params.id, req.user);
+    const pdfBuffer = await pdfService.generatePayslipPdf(payslip);
+
+    const filename = `payslip-${payslip.payslipNumber || payslip._id}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+
+    return res.end(pdfBuffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPayslips,
-  getPayslipById
+  getPayslipById,
+  downloadPayslipPdf
 };
+

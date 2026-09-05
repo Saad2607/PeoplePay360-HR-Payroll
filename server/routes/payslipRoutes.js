@@ -7,6 +7,7 @@ const { authenticate } = require('../middleware/auth');
 router.use(authenticate);
 
 router.get('/', payslipController.getPayslips);
+router.get('/:id/pdf', payslipController.downloadPayslipPdf);
 router.get('/:id', payslipController.getPayslipById);
 
 module.exports = router;
