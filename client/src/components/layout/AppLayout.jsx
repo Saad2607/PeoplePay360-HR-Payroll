@@ -26,6 +26,17 @@ export const AppLayout = ({ children }) => {
     setIsMobileMenuOpen(false);
   }, [location.pathname, location.search]);
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isMobileMenuOpen]);
+
   // Handle ESC key for mobile drawer
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -38,7 +49,7 @@ export const AppLayout = ({ children }) => {
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+    <div className="h-screen bg-slate-50 flex flex-col antialiased selection:bg-brand-500 selection:text-white overflow-hidden">
       {/* Top Application Navbar */}
       <Navbar
         isMobileMenuOpen={isMobileMenuOpen}
@@ -49,7 +60,7 @@ export const AppLayout = ({ children }) => {
       {/* Main Container: Sidebar + Content */}
       <div className="flex flex-1 relative overflow-hidden">
         {/* Desktop Sidebar (hidden on screens < 1024px) */}
-        <div className="hidden lg:block flex-shrink-0">
+        <div className="hidden lg:block flex-shrink-0 h-full">
           <Sidebar onLogoutClick={() => setShowLogoutConfirm(true)} />
         </div>
 
@@ -64,9 +75,9 @@ export const AppLayout = ({ children }) => {
             />
 
             {/* Slide-over Drawer Panel */}
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-2xl z-50 animate-slide-in-left">
+            <div className="relative flex-1 flex flex-col max-w-xs sm:max-w-sm w-full bg-white shadow-2xl z-50 animate-slide-in-left h-full">
               {/* Close button at top of drawer */}
-              <div className="absolute top-2 right-2 pt-2 pr-2">
+              <div className="absolute top-2 right-2 pt-2 pr-2 z-10">
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -84,7 +95,7 @@ export const AppLayout = ({ children }) => {
                   setIsMobileMenuOpen(false);
                   setShowLogoutConfirm(true);
                 }}
-                className="w-full border-r-0 pt-4"
+                className="w-full border-r-0 pt-4 h-full"
               />
             </div>
           </div>

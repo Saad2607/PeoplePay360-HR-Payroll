@@ -58,7 +58,7 @@ export const DataTable = ({
               {columns.map((col) => (
                 <th
                   key={col.key || col.label}
-                  className={`py-3.5 px-4 ${getAlignmentClass(col.align)} ${col.headerClassName || ''}`}
+                  className={`py-3.5 px-4 whitespace-nowrap ${getAlignmentClass(col.align)} ${col.headerClassName || ''}`}
                 >
                   {col.label}
                 </th>
@@ -72,7 +72,7 @@ export const DataTable = ({
               Array.from({ length: 5 }).map((_, idx) => (
                 <tr key={`skeleton-${idx}`} className="animate-pulse">
                   {columns.map((col, cIdx) => (
-                    <td key={cIdx} className="py-4 px-4">
+                    <td key={cIdx} className="py-4 px-4 whitespace-nowrap">
                       <div className="h-4 bg-gray-200 rounded w-4/5" />
                     </td>
                   ))}
@@ -109,7 +109,7 @@ export const DataTable = ({
                     {columns.map((col) => (
                       <td
                         key={col.key || col.label}
-                        className={`py-3.5 px-4 align-middle ${getAlignmentClass(col.align)} ${col.className || ''}`}
+                        className={`py-3.5 px-4 align-middle whitespace-nowrap ${getAlignmentClass(col.align)} ${col.className || ''}`}
                       >
                         {col.render ? col.render(row, rowIdx) : row[col.key] ?? '—'}
                       </td>
