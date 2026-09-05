@@ -48,6 +48,7 @@ router.use('/time-off-requests', timeOffRequestRoutes);
 router.use('/salary-structures', salaryStructureRoutes);
 router.use('/salary-rules', salaryRuleRoutes);
 router.use('/payroll', payrollRoutes);
+router.use('/dashboard', payrollRoutes);
 router.use('/payruns', payrunRoutes);
 router.use('/payslips', payslipRoutes);
 
