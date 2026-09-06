@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-<<<<<<< HEAD
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Mail, Loader2, ShieldCheck, User } from 'lucide-react';
-=======
-import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '../components/common/Logo';
->>>>>>> origin/main
 
 export const LoginPage = () => {
   const { login } = useAuth();
