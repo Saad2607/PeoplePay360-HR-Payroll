@@ -40,6 +40,16 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const register = async (userData) => {
+    const res = await authApi.register(userData);
+    const { user: newUser, token: userToken } = res.data;
+    setUser(newUser);
+    setToken(userToken);
+    localStorage.setItem('peoplepay360_token', userToken);
+    localStorage.setItem('peoplepay360_user', JSON.stringify(newUser));
+    return newUser;
+  };
+
   const logout = async () => {
     await authApi.logout();
     setUser(null);
@@ -57,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         login,
+        register,
         logout,
         isAuthenticated: !!token && !!user,
         isHRManager,
