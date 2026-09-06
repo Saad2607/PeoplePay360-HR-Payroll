@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+<<<<<<< HEAD
+import { useNavigate, Link } from 'react-router-dom';
+import { Lock, Mail, Loader2, ShieldCheck, User } from 'lucide-react';
+=======
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Loader2, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
 import { Logo } from '../components/common/Logo';
+>>>>>>> origin/main
 
 export const LoginPage = () => {
   const { login } = useAuth();
@@ -112,8 +117,18 @@ export const LoginPage = () => {
           </button>
         </form>
 
+        {/* Registration Link for New Users */}
+        <div className="pt-3 border-t border-gray-100 text-center">
+          <p className="text-xs text-gray-500">
+            Don't have an account?{' '}
+            <Link to="/register" className="font-bold text-brand-600 hover:text-brand-700 underline">
+              Create New Account
+            </Link>
+          </p>
+        </div>
+
         {/* Quick Demo Login Switcher */}
-        <div className="pt-4 border-t border-gray-100 space-y-2">
+        <div className="pt-3 border-t border-gray-100 space-y-2">
           <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider text-center">
             Quick Demo Logins (Password: Password123!)
           </p>
