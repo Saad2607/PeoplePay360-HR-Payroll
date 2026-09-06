@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { employeeApi } from '../../api/employeeApi';
 import { contractApi } from '../../api/contractApi';
+import { attendanceApi } from '../../api/attendanceApi';
+import { timeOffRequestApi } from '../../api/timeOffRequestApi';
+import { allocationApi } from '../../api/allocationApi';
 import { Badge } from '../common/Badge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { AttendanceList } from '../attendance/AttendanceList';
@@ -15,19 +18,23 @@ import {
   Briefcase,
   Clock,
   FileText,
-  DollarSign,
   ArrowLeft,
   Edit2,
   AlertCircle,
   Plus,
-  ShieldAlert
+  ShieldAlert,
+  Layers,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractForEmployee }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
   const [employee, setEmployee] = useState(null);
   const [contracts, setContracts] = useState([]);
+  const [attendances, setAttendances] = useState([]);
+  const [timeOffRequests, setTimeOffRequests] = useState([]);
+  const [allocations, setAllocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'contracts' | 'attendance' | 'timeoff' | 'allocations'
@@ -38,14 +45,36 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
       setError('');
       try {
         const empRes = await employeeApi.getById(employeeId);
-        setEmployee(empRes.data);
+        const empData = empRes.data;
+        setEmployee(empData);
 
-        // Fetch contract history
+        // Fetch related records in parallel for accurate Smart Button counts & tabs
         try {
-          const ctrRes = await contractApi.getByEmployee(employeeId);
-          setContracts(ctrRes.data || []);
-        } catch {
-          setContracts([]);
+          const [ctrRes, attRes, toRes, alcRes] = await Promise.all([
+            contractApi.getByEmployee(employeeId).catch(() => ({ data: [] })),
+            attendanceApi.getAll({ employee: employeeId, limit: 100 }).catch(() => ({ data: [] })),
+            timeOffRequestApi.getAll({ employee: employeeId, limit: 100 }).catch(() => ({ data: [] })),
+            allocationApi.getAll({ employee: employeeId, limit: 100 }).catch(() => ({ data: [] })),
+          ]);
+
+          const extractArr = (res) => {
+            if (Array.isArray(res?.data)) return res.data;
+            if (Array.isArray(res?.data?.data)) return res.data.data;
+            if (Array.isArray(res)) return res;
+            return [];
+          };
+
+          const cList = extractArr(ctrRes);
+          const aList = extractArr(attRes);
+          const tList = extractArr(toRes);
+          const alList = extractArr(alcRes);
+
+          setContracts(cList);
+          setAttendances(aList.length > 0 ? aList : (empData.attendances || []));
+          setTimeOffRequests(tList.length > 0 ? tList : (empData.timeOffRequests || []));
+          setAllocations(alList.length > 0 ? alList : (empData.allocations || []));
+        } catch (subErr) {
+          console.error('Error loading related employee smart button records:', subErr);
         }
       } catch (err) {
         setError(err.message || 'Failed to load employee details');
@@ -112,7 +141,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         </div>
 
         <div className="flex items-center space-x-3">
-          {isHRManager && (
+          {canManageHR && (
             <>
               <button
                 onClick={() => onCreateContractForEmployee(employee)}
@@ -132,9 +161,104 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         </div>
       </div>
 
+      {/* Odoo-style Smart Buttons Grid (PDF Requirement B2) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Smart Button 1: Contracts */}
+        <button
+          onClick={() => setActiveTab('contracts')}
+          className={`p-4 rounded-2xl border transition text-left flex items-center justify-between group shadow-xs ${
+            activeTab === 'contracts'
+              ? 'bg-brand-50/80 border-brand-300 ring-2 ring-brand-500/20'
+              : 'bg-white border-gray-200 hover:border-brand-300 hover:bg-gray-50/80'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Contracts</div>
+              <div className="text-xl font-extrabold text-gray-900">{contracts.length}</div>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+            {activeContract ? 'Active' : 'None'}
+          </span>
+        </button>
+
+        {/* Smart Button 2: Attendance */}
+        <button
+          onClick={() => setActiveTab('attendance')}
+          className={`p-4 rounded-2xl border transition text-left flex items-center justify-between group shadow-xs ${
+            activeTab === 'attendance'
+              ? 'bg-amber-50/80 border-amber-300 ring-2 ring-amber-500/20'
+              : 'bg-white border-gray-200 hover:border-amber-300 hover:bg-gray-50/80'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Attendance</div>
+              <div className="text-xl font-extrabold text-gray-900">{attendances.length}</div>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+            Logs
+          </span>
+        </button>
+
+        {/* Smart Button 3: Time Off */}
+        <button
+          onClick={() => setActiveTab('timeoff')}
+          className={`p-4 rounded-2xl border transition text-left flex items-center justify-between group shadow-xs ${
+            activeTab === 'timeoff'
+              ? 'bg-indigo-50/80 border-indigo-300 ring-2 ring-indigo-500/20'
+              : 'bg-white border-gray-200 hover:border-indigo-300 hover:bg-gray-50/80'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Time Off</div>
+              <div className="text-xl font-extrabold text-gray-900">{timeOffRequests.length}</div>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+            Requests
+          </span>
+        </button>
+
+        {/* Smart Button 4: Allocations */}
+        <button
+          onClick={() => setActiveTab('allocations')}
+          className={`p-4 rounded-2xl border transition text-left flex items-center justify-between group shadow-xs ${
+            activeTab === 'allocations'
+              ? 'bg-teal-50/80 border-teal-300 ring-2 ring-teal-500/20'
+              : 'bg-white border-gray-200 hover:border-teal-300 hover:bg-gray-50/80'
+          }`}
+        >
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Allocations</div>
+              <div className="text-xl font-extrabold text-gray-900">{allocations.length}</div>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">
+            Balances
+          </span>
+        </button>
+      </div>
+
       {/* Tabs */}
-      <div className="border-b border-gray-200 bg-white px-6 rounded-xl border">
-        <nav className="flex space-x-8 text-sm font-medium">
+      <div className="border-b border-gray-200 bg-white px-4 sm:px-6 rounded-xl border overflow-x-auto">
+        <nav className="flex space-x-4 sm:space-x-8 text-sm font-medium whitespace-nowrap min-w-max">
           <button
             onClick={() => setActiveTab('overview')}
             className={`py-4 border-b-2 transition ${
@@ -163,27 +287,27 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Attendance Logs
+            Attendance Logs ({attendances.length})
           </button>
           <button
             onClick={() => setActiveTab('timeoff')}
-            className={`py-4 border-b-2 transition ${
+            className={`py-4 border-b-2 transition flex items-center ${
               activeTab === 'timeoff'
                 ? 'border-brand-600 text-brand-600 font-semibold'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Time Off Requests
+            Time Off Requests ({timeOffRequests.length})
           </button>
           <button
             onClick={() => setActiveTab('allocations')}
-            className={`py-4 border-b-2 transition ${
+            className={`py-4 border-b-2 transition flex items-center ${
               activeTab === 'allocations'
                 ? 'border-brand-600 text-brand-600 font-semibold'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            Leave Allocations
+            Leave Allocations ({allocations.length})
           </button>
         </nav>
       </div>
@@ -355,7 +479,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
                 <ShieldAlert className="w-8 h-8 text-amber-500 mx-auto mb-2" />
                 <p className="text-sm font-semibold text-gray-700">No Active Contract</p>
                 <p className="text-xs text-gray-500 mt-1">This employee does not currently have an active contract.</p>
-                {isHRManager && (
+                {canManageHR && (
                   <button
                     onClick={() => onCreateContractForEmployee(employee)}
                     className="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-semibold text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition"
@@ -374,7 +498,7 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-gray-900">Contract History ({contracts.length})</h3>
-            {isHRManager && (
+            {canManageHR && (
               <button
                 onClick={() => onCreateContractForEmployee(employee)}
                 className="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition"
@@ -435,13 +559,13 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         <div className="space-y-4">
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center">
-              <Clock className="w-5 h-5 text-brand-600 mr-2" /> Employee Attendance Logs
+              <Clock className="w-5 h-5 text-brand-600 mr-2" /> Employee Attendance Logs ({attendances.length})
             </h3>
             <AttendanceList
-              attendanceRecords={employee.attendances || []}
+              attendanceRecords={attendances.length > 0 ? attendances : (employee.attendances || [])}
               onManualCorrection={() => {}}
             />
-            {(!employee.attendances || employee.attendances.length === 0) && (
+            {attendances.length === 0 && (!employee.attendances || employee.attendances.length === 0) && (
               <p className="text-sm text-gray-500 text-center py-4">No attendance logs recorded for this employee.</p>
             )}
           </div>
@@ -453,15 +577,15 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         <div className="space-y-4">
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center">
-              <Calendar className="w-5 h-5 text-brand-600 mr-2" /> Leave Requests History
+              <Calendar className="w-5 h-5 text-brand-600 mr-2" /> Leave Requests History ({timeOffRequests.length})
             </h3>
             <TimeOffRequestList
-              requests={employee.timeOffRequests || []}
+              requests={timeOffRequests.length > 0 ? timeOffRequests : (employee.timeOffRequests || [])}
               onApprove={() => {}}
               onRefuse={() => {}}
               onCancel={() => {}}
             />
-            {(!employee.timeOffRequests || employee.timeOffRequests.length === 0) && (
+            {timeOffRequests.length === 0 && (!employee.timeOffRequests || employee.timeOffRequests.length === 0) && (
               <p className="text-sm text-gray-500 text-center py-4">No leave requests submitted for this employee.</p>
             )}
           </div>
@@ -473,13 +597,13 @@ export const EmployeeDetails = ({ employeeId, onBack, onEdit, onCreateContractFo
         <div className="space-y-4">
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center">
-              <FileText className="w-5 h-5 text-brand-600 mr-2" /> Leave Allocations
+              <FileText className="w-5 h-5 text-brand-600 mr-2" /> Leave Allocations ({allocations.length})
             </h3>
             <AllocationList
-              allocations={employee.allocations || []}
+              allocations={allocations.length > 0 ? allocations : (employee.allocations || [])}
               balances={[]}
             />
-            {(!employee.allocations || employee.allocations.length === 0) && (
+            {allocations.length === 0 && (!employee.allocations || employee.allocations.length === 0) && (
               <p className="text-sm text-gray-500 text-center py-4">No leave allocations assigned to this employee.</p>
             )}
           </div>

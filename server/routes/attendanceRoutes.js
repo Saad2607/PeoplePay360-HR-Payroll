@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const attendanceController = require('../controllers/attendanceController');
 const { authenticate, authorize } = require('../middleware/auth');
+const { HR_MANAGERS } = require('../config/roles');
 const validate = require('../middleware/validate');
 const {
   checkInValidator,
@@ -21,7 +22,7 @@ router.post('/check-out', checkOutValidator, validate, attendanceController.chec
 router.get('/', attendanceQueryValidator, validate, attendanceController.getAllAttendance);
 
 // Missing check-out detection (HR/Admin)
-router.get('/missing-checkout', authorize('Admin', 'HR'), attendanceController.getMissingCheckouts);
+router.get('/missing-checkout', authorize(...HR_MANAGERS), attendanceController.getMissingCheckouts);
 
 // Employee specific attendance history
 router.get('/employee/:employeeId', attendanceController.getEmployeeAttendance);
@@ -30,6 +31,6 @@ router.get('/employee/:employeeId', attendanceController.getEmployeeAttendance);
 router.get('/:id', attendanceController.getAttendanceById);
 
 // Manual attendance correction (Restricted to HR and Admin)
-router.put('/:id', authorize('Admin', 'HR'), manualCorrectionValidator, validate, attendanceController.manualCorrection);
+router.put('/:id', authorize(...HR_MANAGERS), manualCorrectionValidator, validate, attendanceController.manualCorrection);
 
 module.exports = router;

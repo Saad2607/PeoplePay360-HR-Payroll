@@ -4,12 +4,12 @@ import { Eye, Edit2, Trash2, Mail, Phone, Calendar, UserCheck } from 'lucide-rea
 import { useAuth } from '../../context/AuthContext';
 
 export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDeleteEmployee }) => {
-  const { isHRManager, isAdmin } = useAuth();
+  const { canManageHR, isAdmin } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[700px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Employee</th>
@@ -22,12 +22,12 @@ export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDe
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {employees.map((emp) => {
+            {employees.map((emp, idx) => {
               const deptName = typeof emp.department === 'object' ? emp.department?.name : emp.department;
               const posName = typeof emp.jobPosition === 'object' ? emp.jobPosition?.name : emp.jobPosition;
 
               return (
-                <tr key={emp._id} className="hover:bg-slate-50/80 transition group">
+                <tr key={emp._id || emp.employeeId || idx} className="hover:bg-slate-50/80 transition group">
                   <td className="py-3.5 px-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 text-white font-bold flex items-center justify-center shadow-sm">
@@ -80,7 +80,7 @@ export const EmployeeList = ({ employees, onSelectEmployee, onEditEmployee, onDe
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    {isHRManager && (
+                    {canManageHR && (
                       <button
                         onClick={() => onEditEmployee(emp)}
                         title="Edit Employee"

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="fav-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="fav-orbit" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c7d2fe" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base Rounded Squircle -->
+  <rect x="0" y="0" width="100" height="100" rx="28" fill="url(#fav-primary)" />
+
+  <!-- 360 Dynamic Orbit Ring -->
+  <circle cx="50" cy="50" r="33" fill="none" stroke="url(#fav-orbit)" stroke-width="5" stroke-dasharray="160 40" stroke-linecap="round" transform="rotate(-40 50 50)" />
+
+  <!-- Stylized Modern 'P' Monogram -->
+  <rect x="35" y="26" width="9" height="48" rx="4.5" fill="#ffffff" />
+  <path d="M 39 26 L 56 26 C 68 26 74 33 74 44 C 74 55 68 62 56 62 L 39 62" 
+        fill="none" stroke="#ffffff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Accent 360 Nodes -->
+  <circle cx="77" cy="28" r="5" fill="#38bdf8" />
+  <circle cx="23" cy="72" r="4" fill="#818cf8" opacity="0.9" />
+</svg>

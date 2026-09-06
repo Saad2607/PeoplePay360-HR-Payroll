@@ -8,6 +8,8 @@ import { ManualCorrectionModal } from '../components/attendance/ManualCorrection
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { EmptyState } from '../components/common/EmptyState';
 import { Toast } from '../components/common/Toast';
+import { PageHeader } from '../components/common/PageHeader';
+import { ErrorMessage } from '../components/common/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 import {
   LogIn,
@@ -22,7 +24,7 @@ import {
 } from 'lucide-react';
 
 export const AttendancePage = () => {
-  const { isHRManager, user } = useAuth();
+  const { canManageHR, user } = useAuth();
 
   const [records, setRecords] = useState([]);
   const [missingCheckouts, setMissingCheckouts] = useState([]);
@@ -43,6 +45,7 @@ export const AttendancePage = () => {
   const [correctingRecord, setCorrectingRecord] = useState(null);
 
   const [toast, setToast] = useState({ message: '', type: 'success' });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadLookups = async () => {
@@ -62,6 +65,7 @@ export const AttendancePage = () => {
 
   const fetchAttendance = async () => {
     setLoading(true);
+    setError(null);
     try {
       const params = {
         status: statusFilter || undefined,
@@ -77,7 +81,7 @@ export const AttendancePage = () => {
       if (res.meta) setMeta(res.meta);
 
       // Check missing checkouts for HR banner
-      if (isHRManager) {
+      if (canManageHR) {
         try {
           const missRes = await attendanceApi.getMissingCheckouts();
           setMissingCheckouts(missRes.data || []);
@@ -86,6 +90,7 @@ export const AttendancePage = () => {
         }
       }
     } catch (err) {
+      setError(err.message || 'Failed to load attendance logs');
       setToast({ message: err.message || 'Failed to load attendance logs', type: 'error' });
     } finally {
       setLoading(false);
@@ -109,33 +114,44 @@ export const AttendancePage = () => {
   return (
     <div className="space-y-6">
       {/* Header & Quick Action Console */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Attendance & Time Tracker</h1>
-          <p className="text-sm text-gray-500">
-            Real-time worked hours, shift check-ins/outs, overtime, and audit logs.
-          </p>
-        </div>
+      <PageHeader
+        title="Attendance & Time Tracker"
+        subtitle="Real-time worked hours, shift check-ins/outs, overtime, and audit logs."
+        breadcrumbs={[
+          { label: 'Overview', href: '/' },
+          { label: 'Attendance' },
+        ]}
+        actions={
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => handleOpenConsole('checkIn')}
+              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/20 transition"
+            >
+              <LogIn className="w-4 h-4 mr-2" /> Check In
+            </button>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => handleOpenConsole('checkIn')}
-            className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/20 transition"
-          >
-            <LogIn className="w-4 h-4 mr-2" /> Check In
-          </button>
+            <button
+              onClick={() => handleOpenConsole('checkOut')}
+              className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition"
+            >
+              <LogOut className="w-4 h-4 mr-2" /> Check Out
+            </button>
+          </div>
+        }
+      />
 
-          <button
-            onClick={() => handleOpenConsole('checkOut')}
-            className="inline-flex items-center px-4 py-2.5 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md shadow-indigo-600/20 transition"
-          >
-            <LogOut className="w-4 h-4 mr-2" /> Check Out
-          </button>
-        </div>
-      </div>
+      {/* Error Message with Retry */}
+      {error && (
+        <ErrorMessage
+          title="Attendance Module Notice"
+          message={error}
+          onRetry={fetchAttendance}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Missing Checkouts Alert Banner */}
-      {isHRManager && missingCheckouts.length > 0 && (
+      {canManageHR && missingCheckouts.length > 0 && (
         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-amber-900">
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
@@ -202,7 +218,7 @@ export const AttendancePage = () => {
           </div>
 
           {/* Employee Filter */}
-          {isHRManager && (
+          {canManageHR && (
             <div>
               <select
                 value={empFilter}

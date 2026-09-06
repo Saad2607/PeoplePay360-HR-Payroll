@@ -1,15 +1,15 @@
 import React from 'react';
 import { Badge } from '../common/Badge';
-import { Edit2, Trash2, Layers, CheckCircle2, DollarSign } from 'lucide-react';
+import { Edit2, Trash2, Layers, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStructure }) => {
-  const { isHRManager } = useAuth();
+  const { canManageSalaryRules, isPayrollUser } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[700px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Structure Name & Code</th>
@@ -21,8 +21,8 @@ export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStruc
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {structures.map((s) => (
-              <tr key={s._id} className="hover:bg-slate-50/80 transition">
+            {structures.map((s, idx) => (
+              <tr key={s._id || s.code || idx} className="hover:bg-slate-50/80 transition">
                 <td className="py-3.5 px-4">
                   <div className="font-bold text-gray-900">{s.name}</div>
                   <span className="text-xs font-mono font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded">
@@ -51,21 +51,27 @@ export const SalaryStructureList = ({ structures, onEditStructure, onDeleteStruc
                 </td>
 
                 <td className="py-3.5 px-4 text-right space-x-1">
-                  {isHRManager && (
+                  {canManageSalaryRules ? (
                     <>
                       <button
                         onClick={() => onEditStructure(s)}
+                        title="Edit Structure & Rules"
                         className="p-1.5 text-gray-500 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => onDeleteStructure(s)}
+                        title="Delete Structure"
                         className="p-1.5 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </>
+                  ) : (
+                    <span className="text-[11px] font-mono text-gray-400 italic px-2 py-1 bg-gray-50 rounded-lg">
+                      Read-Only
+                    </span>
                   )}
                 </td>
               </tr>

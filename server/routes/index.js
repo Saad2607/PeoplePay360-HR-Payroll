@@ -43,11 +43,14 @@ router.use('/contracts', contractRoutes);
 router.use('/schedules', scheduleRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/time-off-types', timeOffTypeRoutes);
+router.use('/timeoff-types', timeOffTypeRoutes);
 router.use('/allocations', allocationRoutes);
 router.use('/time-off-requests', timeOffRequestRoutes);
+router.use('/timeoff-requests', timeOffRequestRoutes);
 router.use('/salary-structures', salaryStructureRoutes);
 router.use('/salary-rules', salaryRuleRoutes);
 router.use('/payroll', payrollRoutes);
+router.use('/dashboard', payrollRoutes);
 router.use('/payruns', payrunRoutes);
 router.use('/payslips', payslipRoutes);
 

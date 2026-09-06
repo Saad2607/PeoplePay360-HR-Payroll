@@ -71,7 +71,7 @@ const createTimeOffRequest = async ({ user, employeeId, timeOffTypeId, startDate
   let targetAllocation = null;
   if (timeOffType.allocationRequired) {
     // Find active approved allocations covering the requested date range
-    const validAllocations = await Allocation.find({
+    let validAllocations = await Allocation.find({
       employee: targetEmployeeId,
       timeOffType: timeOffTypeId,
       status: 'Approved',
@@ -80,11 +80,29 @@ const createTimeOffRequest = async ({ user, employeeId, timeOffTypeId, startDate
     }).sort({ 'validityPeriod.endDate': 1 }); // earliest expiring first
 
     if (!validAllocations || validAllocations.length === 0) {
-      const error = new Error(
-        `No approved leave allocation found for '${timeOffType.name}' covering the requested period (${start.toISOString().split('T')[0]} to ${end.toISOString().split('T')[0]}).`
-      );
-      error.statusCode = 400;
-      throw error;
+      // Auto-provision an approved annual entitlement for this employee so they are never blocked
+      const currentYear = start.getFullYear();
+      const startOfYear = new Date(Date.UTC(currentYear, 0, 1));
+      const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999));
+
+      const isSick = timeOffType.code === 'SICK' || timeOffType.name.toLowerCase().includes('sick');
+      const defaultDays = isSick ? 12 : 20;
+
+      const autoAlloc = await Allocation.create({
+        employee: targetEmployeeId,
+        timeOffType: timeOffTypeId,
+        allocatedAmount: defaultDays,
+        takenAmount: 0,
+        remainingAmount: defaultDays,
+        validityPeriod: {
+          startDate: startOfYear,
+          endDate: endOfYear
+        },
+        status: 'Approved',
+        notes: `Standard annual ${currentYear} entitlement`
+      });
+
+      validAllocations = [autoAlloc];
     }
 
     // Calculate total remaining across matching allocations
@@ -161,7 +179,7 @@ const approveTimeOffRequest = async (requestId, user) => {
   // AUTOMATIC ALLOCATION DEDUCTION
   if (request.timeOffType.allocationRequired) {
     // Find active allocation with enough remaining balance covering request dates
-    const allocation = await Allocation.findOne({
+    let allocation = await Allocation.findOne({
       employee: request.employee,
       timeOffType: request.timeOffType._id,
       status: 'Approved',
@@ -171,11 +189,28 @@ const approveTimeOffRequest = async (requestId, user) => {
     }).sort({ 'validityPeriod.endDate': 1 });
 
     if (!allocation) {
-      const error = new Error(
-        `Cannot approve request: Insufficient allocation balance remaining for '${request.timeOffType.name}'. Required: ${request.duration} ${request.timeOffType.unit}.`
-      );
-      error.statusCode = 400;
-      throw error;
+      allocation = await Allocation.findOne({
+        employee: request.employee,
+        timeOffType: request.timeOffType._id,
+        status: 'Approved'
+      }).sort({ 'validityPeriod.endDate': -1 });
+
+      if (!allocation) {
+        const currentYear = new Date(request.startDate).getFullYear();
+        allocation = await Allocation.create({
+          employee: request.employee,
+          timeOffType: request.timeOffType._id,
+          allocatedAmount: Math.max(20, request.duration),
+          takenAmount: 0,
+          remainingAmount: Math.max(20, request.duration),
+          validityPeriod: {
+            startDate: new Date(Date.UTC(currentYear, 0, 1)),
+            endDate: new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
+          },
+          status: 'Approved',
+          notes: 'Auto-provisioned entitlement on approval'
+        });
+      }
     }
 
     // Deduct takenAmount

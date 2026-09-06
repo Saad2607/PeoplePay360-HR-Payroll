@@ -4,12 +4,12 @@ import { Edit2, Trash2, CheckCircle2, XCircle, ShieldCheck, DollarSign } from 'l
 import { useAuth } from '../../context/AuthContext';
 
 export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
-  const { isHRManager } = useAuth();
+  const { canManageHR } = useAuth();
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-gray-600">
+        <table className="w-full text-left text-sm text-gray-600 min-w-[750px]">
           <thead className="bg-slate-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
             <tr>
               <th className="py-3.5 px-4">Name & Code</th>
@@ -22,8 +22,8 @@ export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {timeOffTypes.map((type) => (
-              <tr key={type._id} className="hover:bg-slate-50/80 transition">
+            {timeOffTypes.map((type, idx) => (
+              <tr key={type._id || type.code || idx} className="hover:bg-slate-50/80 transition">
                 <td className="py-3.5 px-4">
                   <div className="font-bold text-gray-900">{type.name}</div>
                   <span className="text-xs font-mono font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded">
@@ -73,7 +73,7 @@ export const TimeOffTypeList = ({ timeOffTypes, onEditType, onDeleteType }) => {
                 </td>
 
                 <td className="py-3.5 px-4 text-right space-x-1">
-                  {isHRManager && (
+                  {canManageHR && (
                     <>
                       <button
                         onClick={() => onEditType(type)}

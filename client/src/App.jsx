@@ -1,8 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Navbar } from './components/common/Navbar';
-import { Sidebar } from './components/common/Sidebar';
+import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { DashboardPage } from './pages/DashboardPage';
@@ -11,6 +10,8 @@ import { ContractsPage } from './pages/ContractsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { TimeOffPage } from './pages/TimeOffPage';
 import { PayrollPage } from './pages/PayrollPage';
+import { ReportsPage } from './pages/ReportsPage';
+import { AdminUsersPage } from './pages/AdminUsersPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 
@@ -18,24 +19,30 @@ const ProtectedLayout = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner fullScreen label="Checking authentication..." />;
+    return <LoadingSpinner fullScreen label="Verifying session authorization..." />;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-y-auto max-w-7xl mx-auto w-full">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  return <AppLayout>{children}</AppLayout>;
+};
+
+const AdminRoute = ({ children }) => {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen label="Checking admin authorization..." />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return children;
+};
+
+const RoleRoute = ({ children, allowedRoles }) => {
+  const { role, loading } = useAuth();
+  if (loading) return <LoadingSpinner fullScreen label="Checking role permissions..." />;
+  if (!allowedRoles.includes(role)) {
+    return <Navigate to="/" replace />;
+  }
+  return children;
 };
 
 export default function App() {
@@ -54,10 +61,22 @@ export default function App() {
             }
           />
           <Route
+            path="/admin/users"
+            element={
+              <ProtectedLayout>
+                <AdminRoute>
+                  <AdminUsersPage />
+                </AdminRoute>
+              </ProtectedLayout>
+            }
+          />
+          <Route
             path="/employees"
             element={
               <ProtectedLayout>
-                <EmployeesPage />
+                <RoleRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                  <EmployeesPage />
+                </RoleRoute>
               </ProtectedLayout>
             }
           />
@@ -65,7 +84,9 @@ export default function App() {
             path="/contracts"
             element={
               <ProtectedLayout>
-                <ContractsPage />
+                <RoleRoute allowedRoles={['Admin', 'HR Manager', 'HR Payroll Manager', 'HR Payroll User']}>
+                  <ContractsPage />
+                </RoleRoute>
               </ProtectedLayout>
             }
           />
@@ -90,6 +111,14 @@ export default function App() {
             element={
               <ProtectedLayout>
                 <PayrollPage />
+              </ProtectedLayout>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedLayout>
+                <ReportsPage />
               </ProtectedLayout>
             }
           />

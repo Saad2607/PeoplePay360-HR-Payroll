@@ -56,9 +56,20 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
   };
 
-  const isHRManager = user && ['Admin', 'HR Manager', 'HR Payroll Manager'].includes(user.role);
-  const isAdmin = user && user.role === 'Admin';
-  const isPayrollUser = user && ['Admin', 'HR Payroll User', 'HR Payroll Manager'].includes(user.role);
+  // 5 Official Roles
+  const role = user?.role || 'Employee';
+  const isEmployee = role === 'Employee';
+  const isHRManager = role === 'HR Manager';
+  const isPayrollUser = role === 'HR Payroll User';
+  const isPayrollManager = role === 'HR Payroll Manager';
+  const isAdmin = role === 'Admin';
+
+  // Permission & Capability Helpers
+  const canManageHR = ['Admin', 'HR Manager'].includes(role);
+  const canExecutePayroll = ['Admin', 'HR Payroll User', 'HR Payroll Manager'].includes(role);
+  const canManageSalaryRules = ['Admin', 'HR Payroll Manager'].includes(role);
+  const canManageUsers = isAdmin;
+  const isSelfServiceOnly = isEmployee;
 
   return (
     <AuthContext.Provider
@@ -70,9 +81,17 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         isAuthenticated: !!token && !!user,
+        role,
+        isEmployee,
         isHRManager,
-        isAdmin,
         isPayrollUser,
+        isPayrollManager,
+        isAdmin,
+        canManageHR,
+        canExecutePayroll,
+        canManageSalaryRules,
+        canManageUsers,
+        isSelfServiceOnly,
       }}
     >
       {children}
