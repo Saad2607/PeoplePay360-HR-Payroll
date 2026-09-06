@@ -145,7 +145,7 @@ export const RegisterPage = () => {
                 <option value="Employee">Standard Employee</option>
                 <option value="HR Manager">HR Manager</option>
                 <option value="HR Payroll User">HR Payroll User</option>
-                <option value="Admin">System Administrator</option>
+                {/* <option value="Admin">System Administrator</option> */}
               </select>
             </div>
           </div>
